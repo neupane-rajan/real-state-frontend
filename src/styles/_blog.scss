@@ -1,35 +1,10 @@
-.blogs-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #1a2540 100%);
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 70% 50%, rgb(196 0 22 / 8%) 0%, transparent 60%);
-    pointer-events: none;
-  }
-
-  .eyebrow {
-    letter-spacing: 0.1em;
-    font-size: 0.8rem;
-  }
-
-  h1 {
-    font-size: clamp(2.2rem, 5vw, 3.5rem);
-    font-weight: 800;
-    line-height: 1.15;
-  }
-}
-
 .blog-card-premium {
   border-radius: 1.25rem !important;
   transition: transform 0.28s ease, box-shadow 0.28s ease;
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 24px 60px rgb(15 23 42 / 14%) !important;
+    box-shadow: 0 24px 60px rgb(43 43 43 / 14%) !important;
   }
 
   .blog-card-img-wrapper {
@@ -70,27 +45,6 @@
   }
 }
 
-.blog-reader-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  position: relative;
-  overflow: hidden;
-  padding-top: 3rem;
-  padding-bottom: 4rem;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 30% 50%, rgb(196 0 22 / 10%) 0%, transparent 55%);
-    pointer-events: none;
-  }
-
-  h1 {
-    font-size: clamp(1.6rem, 4vw, 2.6rem);
-    line-height: 1.25;
-  }
-}
-
 .blog-reader-cover-wrapper img {
   width: 100%;
   height: auto;
@@ -99,10 +53,16 @@
 .blog-reader-content p {
   font-size: 1.3rem;
   line-height: 1.95;
-  color: #334155;
+  color: $body-color;
   margin-bottom: 1.5rem;
 
   &:last-child {
     margin-bottom: 0;
   }
+}
+
+// Shown when a post has no cover image, so cards keep the same height.
+.blog-card-img-placeholder {
+  height: 200px;
+  background: $border-soft;
 }

@@ -1,299 +1,330 @@
 import axiosInstance from './axiosInstance'
-import {
-  mockCreateProperty,
-  mockDeleteProperty,
-  mockGetProperties,
-  mockGetPropertyById,
-  mockUpdateProperty,
-  USE_MOCK_API,
-} from '../mocks/mockApi'
 
-type ApiCollectionResponse = {
-  success?: boolean
-  message?: string
-  error?: string
-  data?: unknown
-  properties?: unknown
-  property?: unknown
+// Shapes returned by the backend (see backend prisma/schema.prisma).
+
+export type LookupItem = {
+  id: number
+  name: string
 }
 
-export type PropertyMedia = {
-  id?: string | number
-  _id?: string
-  url?: string
-  secure_url?: string
-  path?: string
-  imageUrl?: string
-  videoUrl?: string
-  documentUrl?: string
-  [key: string]: unknown
+// Property types additionally say whether they are a land development / plot project.
+export type PropertyCategory = LookupItem & {
+  isPlotProject?: boolean
 }
 
-export type PropertyCategory = {
-  id?: string | number
-  _id?: string
-  name?: string
-  title?: string
-  [key: string]: unknown
+export type PlotStatus = 'AVAILABLE' | 'RESERVED' | 'SOLD'
+
+export const PLOT_STATUSES: PlotStatus[] = ['AVAILABLE', 'RESERVED', 'SOLD']
+
+// Listing responses only include this summary; the detail response includes full Plot data.
+export type PlotSummary = {
+  id: number
+  status: PlotStatus
+  price: number | null
 }
 
-export type PropertyStatus = {
-  id?: string | number
-  _id?: string
-  name?: string
-  title?: string
-  [key: string]: unknown
+export type Plot = PlotSummary & {
+  plotNumber: string
+  area: number | null
+  areaUnit: string | null
+  facing: string | null
+  description: string | null
+  layoutX: number | null
+  layoutY: number | null
+  images: PropertyImage[]
+}
+
+export type PropertyImage = {
+  id: number
+  image_url: string
+}
+
+export type PropertyVideo = {
+  id: number
+  video_url: string
+}
+
+export type PropertyDocument = {
+  id: number
+  doc_url: string
+  doc_name: string
 }
 
 export type Property = {
-  id?: string | number
-  _id?: string
-  title?: string
-  description?: string
-  price?: string | number
-  address?: string
-  locationLink?: string
-  category?: PropertyCategory | string
-  status?: PropertyStatus | string
-  images?: PropertyMedia[] | string[]
-  propertyImages?: PropertyMedia[] | string[]
-  videos?: PropertyMedia[] | string[]
-  propertyVideos?: PropertyMedia[] | string[]
-  documents?: PropertyMedia[] | string[]
-  propertyDocs?: PropertyMedia[] | string[]
-  amenities?: Array<PropertyCategory | string>
-  [key: string]: unknown
+  id: number
+  title: string
+  description: string
+  price: number | null
+  address: string
+  locationLink: string | null
+  bedrooms: number | null
+  bathrooms: number | null
+  area: string | null
+  roadAccess: string | null
+  isPublished: boolean
+  isFeatured: boolean
+  createdAt: string
+  updatedAt: string
+  sitePlanUrl: string | null
+  plots?: Array<PlotSummary | Plot>
+  category: PropertyCategory
+  status: LookupItem
+  images: PropertyImage[]
+  videos: PropertyVideo[]
+  documents: PropertyDocument[]
+  property_amenities: Array<{ amenity: LookupItem }>
 }
 
+export type PropertyMeta = {
+  categories: PropertyCategory[]
+  statuses: LookupItem[]
+  amenities: LookupItem[]
+}
+
+// Values from the admin form. Empty strings mean "not provided" and clear the field on update.
 export type PropertyFormPayload = {
   title: string
   description: string
-  price: string
   address: string
   categoryId: string
   statusId: string
-  locationLink?: string
-  amenityIds?: string
+  price: string
+  bedrooms: string
+  bathrooms: string
+  area: string
+  roadAccess: string
+  locationLink: string
+  isPublished: boolean
+  isFeatured: boolean
+  amenityIds: string[]
   propertyImages?: FileList
   propertyVideos?: FileList
   propertyDocs?: FileList
+  sitePlan?: FileList
 }
 
-const getErrorMessage = (response: ApiCollectionResponse) =>
-  response.error ?? response.message ?? 'Unable to load properties right now.'
-
-const ensureSuccess = (response: ApiCollectionResponse) => {
-  if (response.success === false) {
-    throw new Error(getErrorMessage(response))
-  }
+// Values from the admin plot form. Empty strings clear optional fields on update.
+export type PlotFormPayload = {
+  plotNumber: string
+  area: string
+  areaUnit: string
+  status: PlotStatus
+  price: string
+  facing: string
+  description: string
+  layoutX: string
+  layoutY: string
+  plotImages?: FileList
 }
 
-export const getPropertyId = (property: Property) => property._id ?? property.id
+export type PropertyMediaType = 'images' | 'videos' | 'documents'
 
-export const getPropertyTitle = (property: Property) =>
-  property.title?.trim() || 'Untitled property'
+type DataResponse<T> = {
+  success: boolean
+  data: T
+}
 
-export const getPropertyCategoryName = (property: Property) => {
-  if (!property.category) {
+// ---------- Display helpers ----------
+
+export const getPropertyImageUrls = (property: Property) =>
+  (property.images ?? []).map((image) => image.image_url).filter(Boolean)
+
+export const getPropertyAmenities = (property: Property) =>
+  (property.property_amenities ?? []).map(({ amenity }) => amenity)
+
+export const isPlotProject = (property: Pick<Property, 'category'>) =>
+  Boolean(property.category?.isPlotProject)
+
+// Counts plots by status; used for availability summaries on cards and the detail page.
+export const getPlotStats = (plots: Array<Pick<PlotSummary, 'status'>> = []) => ({
+  total: plots.length,
+  AVAILABLE: plots.filter((plot) => plot.status === 'AVAILABLE').length,
+  RESERVED: plots.filter((plot) => plot.status === 'RESERVED').length,
+  SOLD: plots.filter((plot) => plot.status === 'SOLD').length,
+})
+
+// Lowest price among plots that are still available, or null if none have a price.
+export const getLowestAvailablePlotPrice = (plots: PlotSummary[] = []) => {
+  const prices = plots
+    .filter((plot) => plot.status === 'AVAILABLE' && typeof plot.price === 'number' && plot.price > 0)
+    .map((plot) => plot.price as number)
+  return prices.length > 0 ? Math.min(...prices) : null
+}
+
+// Natural order: A-2 before A-10.
+export const sortPlots = <T extends { plotNumber: string }>(plots: T[]) =>
+  [...plots].sort((a, b) => a.plotNumber.localeCompare(b.plotNumber, undefined, { numeric: true, sensitivity: 'base' }))
+
+export const hasPrice = (property: Pick<Property, 'price'>) =>
+  typeof property.price === 'number' && Number.isFinite(property.price) && property.price > 0
+
+// Full price, e.g. "Rs. 1,45,00,000". Returns null when no price is set.
+export const formatNprPrice = (price: number | null) => {
+  if (price === null || !Number.isFinite(price) || price <= 0) {
     return null
   }
 
-  if (typeof property.category === 'string') {
-    return property.category
-  }
-
-  return property.category.name ?? property.category.title ?? null
+  return `Rs. ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(price)}`
 }
 
-export const getPropertyStatusName = (property: Property) => {
-  if (!property.status) {
+// Compact price, e.g. "Rs. 1.45 Cr" / "रु. १.४५ करोड". Returns null when no price is set.
+export const formatShortPrice = (price: number | null, isNp = false) => {
+  if (price === null || !Number.isFinite(price) || price <= 0) {
     return null
   }
 
-  if (typeof property.status === 'string') {
-    return property.status
+  const trim = (value: number) =>
+    value % 1 === 0 ? value.toFixed(0) : value.toFixed(2).replace(/\.?0+$/, '')
+
+  if (price >= 10000000) {
+    const value = trim(price / 10000000)
+    return isNp ? `रु. ${value} करोड` : `Rs. ${value} Cr`
   }
 
-  return property.status.name ?? property.status.title ?? null
+  if (price >= 100000) {
+    const value = trim(price / 100000)
+    return isNp ? `रु. ${value} लाख` : `Rs. ${value} Lakh`
+  }
+
+  return formatNprPrice(price)
 }
 
-export const getMediaUrl = (media?: PropertyMedia | string) => {
-  if (!media) {
-    return null
-  }
+// ---------- Public API ----------
 
-  if (typeof media === 'string') {
-    return media
-  }
+export const getProperties = async (params?: { featured?: boolean; limit?: number }) => {
+  const response = await axiosInstance.get<DataResponse<Property[]>>('/properties', {
+    params: {
+      ...(params?.featured ? { featured: 'true' } : {}),
+      ...(params?.limit ? { limit: params.limit } : {}),
+    },
+  })
 
-  return (
-    media.url ??
-    media.secure_url ??
-    media.path ??
-    media.imageUrl ??
-    media.videoUrl ??
-    media.documentUrl ??
-    null
-  )
-}
-
-export const getPropertyImages = (property: Property) =>
-  property.propertyImages ?? property.images ?? []
-
-export const formatNprPrice = (price?: string | number) => {
-  if (price === undefined || price === null || price === '') {
-    return 'Price on request'
-  }
-
-  const numericPrice =
-    typeof price === 'number' ? price : Number(String(price).replace(/[^\d.]/g, ''))
-
-  if (!Number.isFinite(numericPrice)) {
-    return `Rs. ${price}`
-  }
-
-  return `Rs. ${new Intl.NumberFormat('en-IN', {
-    maximumFractionDigits: 0,
-  }).format(numericPrice)}`
-}
-
-export const formatShortPrice = (price?: string | number, isNp?: boolean) => {
-  if (price === undefined || price === null || price === '') {
-    return isNp ? 'मूल्य अनुरोधमा' : 'Price on request'
-  }
-
-  const num = typeof price === 'number' ? price : Number(String(price).replace(/[^\d.]/g, ''))
-  if (!Number.isFinite(num) || num <= 0) {
-    return `Rs. ${price}`
-  }
-
-  if (num >= 10000000) {
-    const crValue = num / 10000000
-    const formatted = crValue % 1 === 0 ? crValue.toFixed(0) : crValue.toFixed(2).replace(/\.?0+$/, '')
-    return isNp ? `रु. ${formatted} करोड` : `Rs. ${formatted} Cr`
-  } else if (num >= 100000) {
-    const lacValue = num / 100000
-    const formatted = lacValue % 1 === 0 ? lacValue.toFixed(0) : lacValue.toFixed(2).replace(/\.?0+$/, '')
-    return isNp ? `रु. ${formatted} लाख` : `Rs. ${formatted} Lac`
-  }
-
-  return `Rs. ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(num)}`
-}
-
-const normalizeProperties = (response: ApiCollectionResponse): Property[] => {
-  ensureSuccess(response)
-
-  const payload = response.data ?? response.properties
-
-  if (Array.isArray(payload)) {
-    return payload as Property[]
-  }
-
-  return []
-}
-
-const normalizeProperty = (response: ApiCollectionResponse): Property => {
-  ensureSuccess(response)
-
-  const payload = response.data ?? response.property
-
-  if (payload && typeof payload === 'object') {
-    return payload as Property
-  }
-
-  throw new Error('Property details were not found.')
-}
-
-export const getProperties = async () => {
-  if (USE_MOCK_API) {
-    return mockGetProperties()
-  }
-
-  const response = await axiosInstance.get<ApiCollectionResponse>('/properties')
-
-  return normalizeProperties(response.data)
+  return response.data.data ?? []
 }
 
 export const getPropertyById = async (propertyId: string) => {
-  if (USE_MOCK_API) {
-    return mockGetPropertyById(propertyId)
-  }
+  const response = await axiosInstance.get<DataResponse<Property>>(`/properties/${propertyId}`)
 
-  const response = await axiosInstance.get<ApiCollectionResponse>(
-    `/properties/${propertyId}`,
-  )
-
-  return normalizeProperty(response.data)
+  return response.data.data
 }
 
-const buildPropertyFormData = (payload: PropertyFormPayload) => {
+export const getPropertyMeta = async () => {
+  const response = await axiosInstance.get<DataResponse<PropertyMeta>>('/properties/meta')
+
+  return response.data.data
+}
+
+// ---------- Admin API ----------
+
+export const getAdminProperties = async () => {
+  const response = await axiosInstance.get<DataResponse<Property[]>>('/properties/admin/all')
+
+  return response.data.data ?? []
+}
+
+const buildPropertyFormData = (payload: Partial<PropertyFormPayload>) => {
   const formData = new FormData()
-  formData.append('title', payload.title)
-  formData.append('description', payload.description)
-  formData.append('price', payload.price)
-  formData.append('address', payload.address)
-  formData.append('categoryId', payload.categoryId)
-  formData.append('statusId', payload.statusId)
+  const textFields = [
+    'title', 'description', 'address', 'categoryId', 'statusId', 'price',
+    'bedrooms', 'bathrooms', 'area', 'roadAccess', 'locationLink',
+  ] as const
 
-  if (payload.locationLink) {
-    formData.append('locationLink', payload.locationLink)
-  }
+  textFields.forEach((field) => {
+    const value = payload[field]
+    if (value !== undefined) {
+      formData.append(field, value.trim())
+    }
+  })
 
-  if (payload.amenityIds) {
-    formData.append('amenityIds', payload.amenityIds)
-  }
+  if (payload.isPublished !== undefined) formData.append('isPublished', String(payload.isPublished))
+  if (payload.isFeatured !== undefined) formData.append('isFeatured', String(payload.isFeatured))
+  if (payload.amenityIds !== undefined) formData.append('amenityIds', JSON.stringify(payload.amenityIds))
 
-  Array.from(payload.propertyImages ?? []).forEach((file) => {
-    formData.append('propertyImages', file)
-  })
-  Array.from(payload.propertyVideos ?? []).forEach((file) => {
-    formData.append('propertyVideos', file)
-  })
-  Array.from(payload.propertyDocs ?? []).forEach((file) => {
-    formData.append('propertyDocs', file)
-  })
+  Array.from(payload.propertyImages ?? []).forEach((file) => formData.append('propertyImages', file))
+  Array.from(payload.propertyVideos ?? []).forEach((file) => formData.append('propertyVideos', file))
+  Array.from(payload.propertyDocs ?? []).forEach((file) => formData.append('propertyDocs', file))
+  if (payload.sitePlan?.[0]) formData.append('sitePlan', payload.sitePlan[0])
 
   return formData
 }
 
 export const createProperty = async (payload: PropertyFormPayload) => {
-  if (USE_MOCK_API) {
-    return mockCreateProperty(payload)
-  }
-
-  const response = await axiosInstance.post<ApiCollectionResponse>(
+  const response = await axiosInstance.post<DataResponse<Property>>(
     '/properties',
     buildPropertyFormData(payload),
   )
 
-  return normalizeProperty(response.data)
+  return response.data.data
 }
 
 export const updateProperty = async (
-  propertyId: string | number,
-  payload: PropertyFormPayload,
+  propertyId: number,
+  payload: Partial<PropertyFormPayload>,
 ) => {
-  if (USE_MOCK_API) {
-    return mockUpdateProperty(propertyId, payload)
-  }
-
-  const response = await axiosInstance.put<ApiCollectionResponse>(
+  const response = await axiosInstance.put<DataResponse<Property>>(
     `/properties/${propertyId}`,
     buildPropertyFormData(payload),
   )
 
-  return normalizeProperty(response.data)
+  return response.data.data
 }
 
-export const deleteProperty = async (propertyId: string | number) => {
-  if (USE_MOCK_API) {
-    return mockDeleteProperty(propertyId)
-  }
+export const deleteProperty = async (propertyId: number) => {
+  await axiosInstance.delete(`/properties/${propertyId}`)
+}
 
-  const response = await axiosInstance.delete<ApiCollectionResponse>(
-    `/properties/${propertyId}`,
+export const deletePropertyMedia = async (
+  propertyId: number,
+  mediaType: PropertyMediaType,
+  mediaId: number,
+) => {
+  await axiosInstance.delete(`/properties/${propertyId}/${mediaType}/${mediaId}`)
+}
+
+// ---------- Admin: land development / plot projects ----------
+
+export const getAdminPropertyById = async (propertyId: number) => {
+  const response = await axiosInstance.get<DataResponse<Property>>(`/properties/admin/${propertyId}`)
+
+  return response.data.data
+}
+
+export const deleteSitePlan = async (propertyId: number) => {
+  await axiosInstance.delete(`/properties/${propertyId}/site-plan`)
+}
+
+const buildPlotFormData = (payload: Partial<PlotFormPayload>) => {
+  const formData = new FormData()
+  const fields = ['plotNumber', 'area', 'areaUnit', 'status', 'price', 'facing', 'description', 'layoutX', 'layoutY'] as const
+
+  fields.forEach((field) => {
+    const value = payload[field]
+    if (value !== undefined) formData.append(field, String(value).trim())
+  })
+  Array.from(payload.plotImages ?? []).forEach((file) => formData.append('plotImages', file))
+
+  return formData
+}
+
+export const createPlot = async (propertyId: number, payload: PlotFormPayload) => {
+  const response = await axiosInstance.post<DataResponse<Plot>>(`/properties/${propertyId}/plots`, buildPlotFormData(payload))
+
+  return response.data.data
+}
+
+export const updatePlot = async (propertyId: number, plotId: number, payload: Partial<PlotFormPayload>) => {
+  const response = await axiosInstance.put<DataResponse<Plot>>(
+    `/properties/${propertyId}/plots/${plotId}`,
+    buildPlotFormData(payload),
   )
 
-  ensureSuccess(response.data)
-  return response.data
+  return response.data.data
+}
+
+export const deletePlot = async (propertyId: number, plotId: number) => {
+  await axiosInstance.delete(`/properties/${propertyId}/plots/${plotId}`)
+}
+
+export const deletePlotImage = async (propertyId: number, plotId: number, imageId: number) => {
+  await axiosInstance.delete(`/properties/${propertyId}/plots/${plotId}/images/${imageId}`)
 }

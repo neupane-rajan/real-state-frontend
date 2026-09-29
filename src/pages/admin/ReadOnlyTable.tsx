@@ -3,52 +3,63 @@ import { Table } from 'react-bootstrap'
 import { Loader } from '../../components/common/Loader'
 import { ErrorState } from '../../components/common/ErrorState'
 
-type ReadOnlyTableProps<T extends Record<string, unknown>> = {
+type ReadOnlyTableProps<T extends { id?: number | string }> = {
   title: string
+  description?: string
+  emptyText?: string
   queryKey: string[]
-  queryFn: () => Promise<unknown[]>
+  queryFn: () => Promise<T[]>
   columns: Array<{
     label: string
+    className?: string
     render: (item: T) => React.ReactNode
   }>
 }
 
-export function ReadOnlyTable<T extends Record<string, unknown>>({
+export function ReadOnlyTable<T extends { id?: number | string }>({
   title,
+  description,
+  emptyText = 'Nothing here yet.',
   queryKey,
   queryFn,
   columns,
 }: ReadOnlyTableProps<T>) {
-  const { data = [], isLoading, isError } = useQuery({
-    queryKey,
-    queryFn: async () => (await queryFn()) as T[],
-  })
+  const { data = [], isLoading, isError } = useQuery({ queryKey, queryFn })
 
   return (
     <section>
-      <p className="eyebrow text-primary">Admin</p>
-      <h1 className="h2 fw-bold mb-4">{title}</h1>
+      <div className="admin-page-header">
+        <div>
+          <h1 className="admin-page-title">{title}</h1>
+          {description ? <p className="text-muted mb-0">{description}</p> : null}
+        </div>
+      </div>
       {isLoading ? <Loader /> : null}
       {isError ? <ErrorState title={`Could not load ${title.toLowerCase()}`} /> : null}
-      {!isLoading && !isError ? (
-        <Table responsive hover className="admin-table bg-white">
-          <thead>
-            <tr>
-              {columns.map((column) => (
-                <th key={column.label}>{column.label}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item, index) => (
-              <tr key={String(item._id ?? item.id ?? index)}>
+      {!isLoading && !isError && data.length === 0 ? (
+        <div className="admin-panel"><p className="admin-panel__empty">{emptyText}</p></div>
+      ) : null}
+      {!isLoading && !isError && data.length > 0 ? (
+        <div className="admin-panel p-0">
+          <Table responsive hover className="admin-table mb-0">
+            <thead>
+              <tr>
                 {columns.map((column) => (
-                  <td key={column.label}>{column.render(item)}</td>
+                  <th key={column.label} className={column.className}>{column.label}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {data.map((item, index) => (
+                <tr key={String(item.id ?? index)}>
+                  {columns.map((column) => (
+                    <td key={column.label} className={column.className}>{column.render(item)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
       ) : null}
     </section>
   )

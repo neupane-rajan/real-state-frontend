@@ -1,17 +1,29 @@
-import { createContext, useContext, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { translations, type Language, type TranslationKey } from '../constants/translations';
+import { LanguageContext } from './languageContextValue';
 
-type LanguageContextType = {
-  language: Language;
-  toggleLanguage: () => void;
-  t: (key: TranslationKey) => string;
-};
+const LANGUAGE_STORAGE_KEY = 'realStateLanguage';
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<Language>('np');
+  const [language, setLanguage] = useState<Language>(() => {
+    try {
+      return localStorage.getItem(LANGUAGE_STORAGE_KEY) === 'en' ? 'en' : 'np';
+    } catch {
+      return 'np';
+    }
+  });
+
+  // Keep <html lang> in sync for screen readers and remember the visitor's choice.
+  useEffect(() => {
+    document.documentElement.lang = language === 'np' ? 'ne' : 'en';
+    try {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    } catch {
+      // Storage unavailable; the choice just won't persist.
+    }
+  }, [language]);
 
   const toggleLanguage = () => {
     setLanguage((prev) => (prev === 'np' ? 'en' : 'np'));
@@ -28,10 +40,3 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
-};

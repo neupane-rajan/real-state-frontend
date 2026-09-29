@@ -1,11 +1,4 @@
 import axiosInstance from './axiosInstance'
-import {
-  mockCreateBanner,
-  mockDeleteBanner,
-  mockGetBanners,
-  mockUpdateBanner,
-  USE_MOCK_API,
-} from '../mocks/mockApi'
 
 type ApiResponse = {
   success?: boolean
@@ -65,9 +58,6 @@ const normalizeBanners = (response: ApiResponse): Banner[] => {
 export { getBannerImage }
 
 export const getBanners = async () => {
-  if (USE_MOCK_API) {
-    return mockGetBanners()
-  }
 
   const response = await axiosInstance.get<ApiResponse>('/banners')
 
@@ -90,9 +80,6 @@ const buildBannerFormData = (payload: BannerFormPayload) => {
 }
 
 export const createBanner = async (payload: BannerFormPayload) => {
-  if (USE_MOCK_API) {
-    return mockCreateBanner(payload)
-  }
 
   const response = await axiosInstance.post<ApiResponse>(
     '/banners/upload',
@@ -110,9 +97,6 @@ export const updateBanner = async (
   bannerId: string | number,
   payload: BannerFormPayload,
 ) => {
-  if (USE_MOCK_API) {
-    return mockUpdateBanner(bannerId, payload)
-  }
 
   const response = await axiosInstance.put<ApiResponse>(
     `/banners/${bannerId}`,
@@ -127,9 +111,6 @@ export const updateBanner = async (
 }
 
 export const deleteBanner = async (bannerId: string | number) => {
-  if (USE_MOCK_API) {
-    return mockDeleteBanner(bannerId)
-  }
 
   const response = await axiosInstance.delete<ApiResponse>(`/banners/${bannerId}`)
 

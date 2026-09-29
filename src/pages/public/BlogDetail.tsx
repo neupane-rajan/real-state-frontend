@@ -4,8 +4,7 @@ import { useParams, Link } from 'react-router-dom'
 import { getBlogBySlug } from '../../api/blogs'
 import { Loader } from '../../components/common/Loader'
 import { ErrorState } from '../../components/common/ErrorState'
-import { useLanguage } from '../../context/LanguageContext'
-import { translateBlog } from '../../utils/translateHelpers'
+import { useLanguage } from '../../hooks/useLanguage'
 
 export function BlogDetail() {
   const { slug } = useParams<{ slug: string }>()
@@ -52,29 +51,22 @@ export function BlogDetail() {
     )
   }
 
-  const translated = translateBlog(blog, language)
+  const translated = blog
 
   return (
     <article className="blog-reader-page">
-      {/* Article Hero Banner */}
-      <section className="blog-reader-hero py-5 text-white">
-        <Container className="py-4">
+      <section className="page-hero">
+        <Container>
           <Row className="justify-content-center">
             <Col lg={8}>
-              <Link to="/blogs" className="text-primary text-decoration-none fw-bold mb-3 d-inline-block">
-                &larr; {isNp ? 'ब्लगहरूमा फर्कनुहोस्' : 'Back to Blogs'}
+              <Link to="/blogs" className="home-section-header__link d-inline-block mb-3">
+                <span aria-hidden="true">←</span> {isNp ? 'सबै लेखहरू' : 'All articles'}
               </Link>
-              <h1 className="display-5 fw-extrabold mb-3 text-white leading-tight">
-                {translated.title}
-              </h1>
-              <div className="d-flex align-items-center gap-3 text-light opacity-75" style={{ fontSize: '0.95rem' }}>
-                <span className="bg-primary px-3 py-1 rounded-pill text-white text-uppercase fw-bold" style={{ fontSize: '0.75rem' }}>
-                  {isNp ? 'जानकारी' : 'Insight'}
-                </span>
-                <span>By <strong>{blog.author}</strong></span>
-                <span>•</span>
-                <span>{formatDate(blog.createdAt)}</span>
-              </div>
+              <h1 className="page-hero__title">{translated.title}</h1>
+              <p className="page-hero__subtitle">
+                {blog.author ? <>{blog.author} · </> : null}
+                {formatDate(blog.createdAt)}
+              </p>
             </Col>
           </Row>
         </Container>
@@ -97,12 +89,17 @@ export function BlogDetail() {
             ) : null}
 
             {/* Content text */}
-            <div className="blog-reader-content" style={{ fontSize: '1.18rem', lineHeight: '1.95', color: '#334155' }}>
-              {translated.content?.split('\n').map((paragraph: string, index: number) => (
-                <p key={index} className="mb-4">
-                  {paragraph.trim()}
-                </p>
-              ))}
+            <div className="blog-reader-content" style={{ fontSize: '1.18rem', lineHeight: '1.95' }}>
+              {/* Blank lines separate paragraphs; single line breaks stay inside a paragraph */}
+              {(translated.content ?? '')
+                .split(/\n\s*\n/)
+                .map((paragraph: string) => paragraph.trim())
+                .filter(Boolean)
+                .map((paragraph: string, index: number) => (
+                  <p key={index} className="mb-4" style={{ whiteSpace: 'pre-line' }}>
+                    {paragraph}
+                  </p>
+                ))}
             </div>
 
             <hr className="my-5" />

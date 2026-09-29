@@ -1,0 +1,389 @@
+// ===============================================================
+// Land development / plot projects
+// Status colours are always paired with a text label.
+// ===============================================================
+
+$plot-available: #15803d;
+$plot-reserved: #b45309;
+$plot-sold: #6b7280;
+
+.plot-project__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.plot-project__summary {
+  margin: 0;
+  color: $muted;
+}
+
+.plot-view-toggle {
+  display: inline-flex;
+  padding: 0.25rem;
+  border: 1px solid $border-soft;
+  border-radius: $border-radius-pill;
+  background: $surface;
+
+  button {
+    padding: 0.375rem 1rem;
+    border: 0;
+    border-radius: $border-radius-pill;
+    background: transparent;
+    color: $body-color;
+    font-weight: 600;
+
+    &.is-active {
+      background: $ink;
+      color: $white;
+    }
+  }
+}
+
+.plot-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.plot-dot {
+  display: inline-block;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+}
+
+.plot-dot--available { background: $plot-available; }
+.plot-dot--reserved { background: $plot-reserved; }
+.plot-dot--sold { background: $plot-sold; }
+
+.plot-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: $border-radius-pill;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.plot-status--available { background: rgb(21 128 61 / 12%); color: $plot-available; }
+.plot-status--reserved { background: rgb(180 83 9 / 12%); color: $plot-reserved; }
+.plot-status--sold { background: rgb(107 114 128 / 15%); color: #4b5563; }
+
+// Site plan with clickable markers --------------------------------
+
+.plot-plan__scroller {
+  overflow-x: auto;
+  border: 1px solid $border-soft;
+  border-radius: $border-radius-lg;
+  background: $surface;
+}
+
+.plot-plan {
+  position: relative;
+  min-width: 560px; // phones scroll sideways instead of shrinking markers into each other
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+
+.plot-marker {
+  position: absolute;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.375rem;
+  transform: translate(-50%, -50%);
+  border: 2px solid $white;
+  border-radius: $border-radius-pill;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 30%);
+  color: $white;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    z-index: 2;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+
+  &.is-dimmed {
+    opacity: 0.3;
+  }
+}
+
+.plot-marker--available { background: $plot-available; }
+.plot-marker--reserved { background: $plot-reserved; }
+.plot-marker--sold { background: $plot-sold; text-decoration: line-through; }
+
+.plot-plan__hint {
+  margin: 0.625rem 0 0;
+  color: $muted;
+  font-size: 0.875rem;
+}
+
+// Tile layout (no site plan) --------------------------------------
+
+.plot-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plot-tile {
+  display: grid;
+  width: 100%;
+  min-height: 5.25rem;
+  align-content: center;
+  gap: 0.125rem;
+  padding: 0.625rem 0.5rem;
+  border: 2px solid transparent;
+  border-radius: $border-radius;
+  text-align: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  strong {
+    color: $ink;
+    font-size: 1.0625rem;
+  }
+
+  span {
+    color: $body-color;
+    font-size: 0.8125rem;
+  }
+
+  small {
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  &:hover {
+    box-shadow: $shadow-sm;
+    transform: translateY(-2px);
+  }
+}
+
+.plot-tile--available {
+  border-color: rgb(21 128 61 / 45%);
+  background: rgb(21 128 61 / 8%);
+  small { color: $plot-available; }
+}
+
+.plot-tile--reserved {
+  border-color: rgb(180 83 9 / 45%);
+  background: rgb(180 83 9 / 8%);
+  small { color: $plot-reserved; }
+}
+
+.plot-tile--sold {
+  border-color: rgb(107 114 128 / 35%);
+  background: rgb(107 114 128 / 10%);
+
+  strong { color: #4b5563; text-decoration: line-through; }
+  small { color: #4b5563; }
+}
+
+// List view ------------------------------------------------------
+
+.plot-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  button {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.625rem;
+    border: 1px solid $border-soft;
+    border-radius: $border-radius-lg;
+    background: $surface;
+    text-align: left;
+
+    &:hover {
+      border-color: $border-strong;
+      box-shadow: $shadow-sm;
+    }
+  }
+
+  img,
+  .plot-list__thumb {
+    width: 3.5rem;
+    height: 3.5rem;
+    flex: 0 0 auto;
+    border-radius: $border-radius;
+    object-fit: cover;
+  }
+}
+
+.plot-list__thumb {
+  display: grid;
+  place-items: center;
+  background: $surface-soft;
+  color: $ink;
+  font-weight: 700;
+}
+
+.plot-list__main {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+
+  strong {
+    color: $ink;
+  }
+
+  span {
+    color: $muted;
+    font-size: 0.875rem;
+  }
+}
+
+.plot-list__side {
+  display: grid;
+  justify-items: end;
+  gap: 0.25rem;
+}
+
+.plot-list__price {
+  color: $ink;
+  font-weight: 700;
+}
+
+// Plot detail modal ----------------------------------------------
+
+.plot-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+
+  > div {
+    padding: 0.75rem 1rem;
+    border: 1px solid $border-soft;
+    border-radius: $border-radius;
+  }
+
+  dt {
+    color: $muted;
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  dd {
+    margin: 0;
+    color: $ink;
+    font-weight: 700;
+  }
+}
+
+.plot-description {
+  white-space: pre-line;
+}
+
+.plot-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+
+  .btn {
+    padding-block: 0.7rem;
+  }
+}
+
+.plot-inquiry summary {
+  margin-bottom: 1rem;
+  color: $primary;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.plot-sold-note {
+  padding: 1rem;
+  border-radius: $border-radius;
+  background: $surface-soft;
+}
+
+.pd-header__price-prefix {
+  color: $muted;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+@include media-breakpoint-down(sm) {
+  .plot-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ---------------------------------------------------------------
+// Admin: site plan position picker and status select
+// ---------------------------------------------------------------
+
+.admin-site-plan {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  img {
+    width: 12rem;
+    max-height: 9rem;
+    border: 1px solid $border-soft;
+    border-radius: $border-radius;
+    object-fit: contain;
+    background: $surface-soft;
+  }
+}
+
+.admin-plan-picker {
+  position: relative;
+  overflow: hidden;
+  border: 2px dashed $border-strong;
+  border-radius: $border-radius;
+  cursor: crosshair;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    user-select: none;
+    pointer-events: none;
+  }
+}
+
+.admin-plan-picker__pin {
+  position: absolute;
+  width: 1.5rem;
+  height: 1.5rem;
+  transform: translate(-50%, -50%);
+  border: 3px solid $white;
+  border-radius: 50%;
+  background: $primary;
+  box-shadow: 0 0 0 3px rgb(196 0 22 / 35%), 0 2px 6px rgb(0 0 0 / 35%);
+}
+
+.admin-plot-status {
+  min-width: 8.5rem;
+  font-weight: 600;
+}
+
+.admin-plot-status--available { color: $plot-available; }
+.admin-plot-status--reserved { color: $plot-reserved; }
+.admin-plot-status--sold { color: #4b5563; }

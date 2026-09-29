@@ -1,10 +1,4 @@
 import axiosInstance from './axiosInstance'
-import {
-  mockCreateTestimonial,
-  mockDeleteTestimonial,
-  mockGetTestimonials,
-  USE_MOCK_API,
-} from '../mocks/mockApi'
 
 type ApiResponse = {
   success?: boolean
@@ -69,9 +63,6 @@ const normalizeTestimonials = (response: ApiResponse): Testimonial[] => {
 }
 
 export const getTestimonials = async () => {
-  if (USE_MOCK_API) {
-    return mockGetTestimonials()
-  }
 
   const response = await axiosInstance.get<ApiResponse>('/testimonials')
 
@@ -95,9 +86,6 @@ const buildTestimonialFormData = (payload: TestimonialFormPayload) => {
 }
 
 export const createTestimonial = async (payload: TestimonialFormPayload) => {
-  if (USE_MOCK_API) {
-    return mockCreateTestimonial(payload)
-  }
 
   const response = await axiosInstance.post<ApiResponse>(
     '/testimonials',
@@ -113,10 +101,25 @@ export const createTestimonial = async (payload: TestimonialFormPayload) => {
   return response.data
 }
 
-export const deleteTestimonial = async (testimonialId: string | number) => {
-  if (USE_MOCK_API) {
-    return mockDeleteTestimonial(testimonialId)
+export const updateTestimonial = async (
+  testimonialId: string | number,
+  payload: TestimonialFormPayload,
+) => {
+  const response = await axiosInstance.put<ApiResponse>(
+    `/testimonials/${testimonialId}`,
+    buildTestimonialFormData(payload),
+  )
+
+  if (response.data.success === false) {
+    throw new Error(
+      response.data.error ?? response.data.message ?? 'Testimonial update failed.',
+    )
   }
+
+  return response.data
+}
+
+export const deleteTestimonial = async (testimonialId: string | number) => {
 
   const response = await axiosInstance.delete<ApiResponse>(
     `/testimonials/${testimonialId}`,

@@ -4,186 +4,424 @@
 @import "./navbar";
 @import "./hero";
 @import "./properties";
+@import "./plots";
 @import "./testimonials";
-@import "./experience";
 @import "./footer";
 @import "./about";
 @import "./blog";
 @import "./whatsapp";
 @import "./admin";
 
+// ---------------------------------------------------------------
+// Base
+// ---------------------------------------------------------------
+
+:root {
+  --font-heading: "Poppins", "Mukta", system-ui, sans-serif;
+}
+
+html[lang="ne"] {
+  --font-heading: "Mukta", "Poppins", system-ui, sans-serif;
+}
+
 body {
   min-width: 320px;
   background: $body-bg;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  max-width: 100%;
+}
+
+h1, h2, h3, h4 {
+  letter-spacing: -0.01em;
+}
+
+p {
+  max-width: 72ch;
+}
+
+// Visible keyboard focus everywhere, without showing it on mouse click.
+:focus-visible {
+  outline: 3px solid rgb(196 0 22 / 55%);
+  outline-offset: 2px;
+}
+
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 0.25rem $focus-ring-color;
+}
+
+#main-content:focus {
+  outline: none;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 1100;
+  padding: 0.5rem 1rem;
+  border-radius: $border-radius;
+  background: $ink;
+  color: $white;
+  font-weight: 600;
+  transform: translateY(-150%);
+  transition: transform 0.15s ease;
+
+  &:focus {
+    transform: translateY(0);
+    color: $white;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .public-layout {
+  display: flex;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgb(196 0 22 / 10%), transparent 28rem),
-    linear-gradient(180deg, rgb(255 255 255 / 80%), transparent 24rem),
-    $body-bg;
+  flex-direction: column;
+  background: $body-bg;
+
+  > main {
+    flex: 1 0 auto;
+  }
 }
+
+// ---------------------------------------------------------------
+// Layout primitives
+// ---------------------------------------------------------------
 
 .section-block {
-  padding: clamp(3rem, 7vw, 5rem) 0;
+  padding: $section-space 0;
 }
 
-.section-block > .container {
-  position: relative;
+.section-block--tight {
+  padding: $section-space-tight 0 $section-space;
 }
 
 .section-block--soft {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 74%), rgb(255 255 255 / 46%)),
-    radial-gradient(circle at right, rgb(196 0 22 / 10%), transparent 28rem);
-}
-
-.section-heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.section-heading h2 {
-  margin-bottom: 0;
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-  font-weight: 800;
+  background: $surface-soft;
 }
 
 .eyebrow {
-  margin-bottom: 0.75rem;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  margin-bottom: 0.5rem;
+  color: $primary;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+// Shared header band for inner pages (Properties, Contact, About, Blog)
+.page-hero {
+  padding: clamp(2.25rem, 5vw, 3.5rem) 0;
+  border-bottom: 1px solid $border-soft;
+  background: $surface-soft;
+}
+
+.page-hero__title {
+  margin-bottom: 0.5rem;
+  font-size: clamp(1.875rem, 4vw, 2.625rem);
+}
+
+.page-hero__subtitle {
+  max-width: 40rem;
+  margin-bottom: 0;
+  color: $muted;
+  font-size: clamp(1rem, 1.8vw, 1.125rem);
+}
+
+.surface-card {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid $border-soft;
+  border-radius: $border-radius-lg;
+  background: $surface;
+  box-shadow: $shadow-sm;
+}
+
+.surface-card__title {
+  margin-bottom: 0.25rem;
+  font-size: 1.25rem;
+}
+
+// Empty / error / loading states
+.state-card {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3rem) 1.5rem;
+  border: 1px dashed $border-strong;
+  border-radius: $border-radius-lg;
+  background: $surface;
+  text-align: center;
+
+  h2 {
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+  }
+
+  p {
+    margin: 0 auto;
+    color: $muted;
+  }
+}
+
+.state-card--error {
+  border-style: solid;
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+// ---------------------------------------------------------------
+// Buttons, badges, forms
+// ---------------------------------------------------------------
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-whatsapp {
+  border-color: $whatsapp;
+  background: $whatsapp;
+  color: $white;
+
+  &:hover,
+  &:focus-visible {
+    border-color: darken($whatsapp, 6%);
+    background: darken($whatsapp, 6%);
+    color: $white;
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .w-md-auto {
+    width: auto !important;
+  }
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: $border-radius-pill;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.badge-pill--featured {
+  background: $primary;
+  color: $white;
+}
+
+.badge-pill--status {
+  background: rgb(255 255 255 / 94%);
+  color: $ink;
+  box-shadow: $shadow-sm;
+}
+
+.badge-pill--sold {
+  background: $ink;
+  color: $white;
+}
+
+.badge-pill--soft {
+  background: $surface-soft;
+  color: $body-color;
+}
+
+.form-label {
+  margin-bottom: 0.375rem;
+  color: $ink;
+  font-weight: 600;
+}
+
+.form-required {
+  color: $primary;
+  font-weight: 700;
+}
+
+.form-optional {
+  color: $muted;
+  font-size: 0.875em;
+  font-weight: 400;
+}
+
+// ---------------------------------------------------------------
+// Contact
+// ---------------------------------------------------------------
+
+.contact-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.125rem 1.25rem;
+    border: 1px solid $border-soft;
+    border-radius: $border-radius-lg;
+    background: $surface;
+  }
+}
+
+.contact-list__icon {
+  display: inline-grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: $border-radius;
+  background: rgb(196 0 22 / 8%);
+  color: $primary;
+}
+
+.contact-list__icon--whatsapp {
+  background: rgb(18 140 75 / 10%);
+  color: $whatsapp;
+}
+
+.contact-list__label {
+  margin-bottom: 0.125rem;
+  color: $muted;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
+.contact-list__values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  color: $ink;
+  font-weight: 600;
+
+  a {
+    color: $ink;
+    text-decoration: none;
+
+    &:hover {
+      color: $primary;
+      text-decoration: underline;
+    }
+  }
+}
+
+// ---------------------------------------------------------------
+// FAQ & admin login
+// ---------------------------------------------------------------
+
 .faq-accordion {
   overflow: hidden;
-  border-radius: 1.25rem;
-  box-shadow: 0 10px 28px rgb(22 35 31 / 9%);
+  border: 1px solid $border-soft;
+  border-radius: $border-radius-lg;
+
+  .accordion-button {
+    font-weight: 600;
+  }
+}
+
+.auth-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, $ink 0%, $ink-soft 100%);
 }
 
 .auth-card {
-  max-width: 30rem;
+  max-width: 28rem;
+  border: 0;
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-lg;
 }
 
-.newsletter-section {
-  padding: clamp(2rem, 6vw, 4rem) 0;
-  background:
-    radial-gradient(circle at left, rgb(196 0 22 / 12%), transparent 22rem),
-    $white;
+.auth-card__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  color: $ink;
+  font-weight: 700;
+
+  img {
+    border-radius: $border-radius;
+    object-fit: contain;
+  }
 }
 
-.newsletter-section h2 {
-  font-weight: 800;
+@include media-breakpoint-down(sm) {
 }
 
-.contact-details {
+.contact-map {
+  margin-top: 1rem;
+  overflow: hidden;
+  border: 1px solid $border-soft;
+  border-radius: $border-radius-lg;
+  background: $surface;
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: 16rem;
+    border: 0;
+  }
+
+  p {
+    margin: 0;
+    padding: 0.625rem 1rem;
+    color: $muted;
+    font-size: 0.875rem;
+  }
+}
+
+// 404 page
+.not-found {
+  padding: clamp(4rem, 12vw, 8rem) 0;
+}
+
+.not-found__code {
+  margin-bottom: 0.5rem;
+  color: $primary;
+  font-family: $headings-font-family;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.not-found__title {
+  margin-bottom: 1rem;
+  font-size: clamp(1.875rem, 4vw, 2.75rem);
+}
+
+.not-found__text {
+  max-width: 36rem;
+  color: $muted;
+}
+
+.not-found__links {
   display: grid;
   gap: 0.75rem;
-  margin-top: 1.5rem;
-}
-
-.contact-details span {
-  display: block;
-  padding: 0.85rem 1rem;
-  border: 1px solid rgb(196 0 22 / 12%);
-  border-radius: 1rem;
-  background: rgb(255 255 255 / 72%);
-  color: #2f3337;
-  font-weight: 700;
-  box-shadow: 0 10px 24px rgb(22 35 31 / 6%);
-}
-
-.profile-avatar {
-  width: 8rem;
-  height: 8rem;
-  border-radius: 999px;
-  object-fit: cover;
-}
-
-.profile-avatar--empty {
-  display: grid;
-  place-items: center;
-  margin: 0 auto;
-  background: rgb(196 0 22 / 12%);
-  color: $primary;
-  font-size: 3rem;
-  font-weight: 800;
-}
-
-@media (max-width: 767.98px) {
-  .brand-lockup {
-    max-width: calc(100% - 4rem);
-  }
-
-  .brand-lockup img {
-    width: 2.8rem;
-    height: 2.8rem;
-  }
-
-  .brand-lockup small {
-    display: none;
-  }
-
-  .site-navbar .navbar-collapse {
-    margin-top: 1rem;
-    padding: 1rem;
-    border: 1px solid rgb(47 51 55 / 8%);
-    border-radius: 1.25rem;
-    background: $white;
-    box-shadow: 0 18px 40px rgb(47 51 55 / 10%);
-  }
-
-  .site-nav-links,
-  .site-nav-actions {
-    align-items: stretch;
-    gap: 0.45rem;
-  }
-
-  .site-nav-links {
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-  }
-
-  .site-nav-links .nav-link,
-  .site-nav-actions .nav-link,
-  .site-nav-actions button {
-    width: 100%;
-    text-align: left;
-  }
-
-  .nav-cta {
-    text-align: center !important;
-  }
-
-  .admin-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-sidebar {
-    position: static;
-    height: auto;
-  }
-
-  .admin-sidebar nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 575.98px) {
-  .section-heading {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .property-gallery__thumbs {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
 }

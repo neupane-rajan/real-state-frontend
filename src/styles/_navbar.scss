@@ -1,110 +1,279 @@
+// ---------------------------------------------------------------
+// Office details strip
+// ---------------------------------------------------------------
+
+.site-topbar {
+  background: $ink;
+  color: $border-strong;
+  font-size: 0.8125rem;
+
+  a {
+    color: $border-strong;
+    text-decoration: none;
+
+    &:hover {
+      color: $white;
+    }
+  }
+}
+
+.site-topbar__inner {
+  display: flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.site-topbar__links {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.site-topbar__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+
+  svg {
+    opacity: 0.7;
+  }
+}
+
+// ---------------------------------------------------------------
+// Main bar
+// ---------------------------------------------------------------
+
 .site-navbar {
   position: sticky;
   top: 0;
-  z-index: 20;
-  border-bottom: 1px solid rgb(47 51 55 / 8%);
-  background: rgb(255 255 255 / 92%);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 10px 30px rgb(47 51 55 / 7%);
+  z-index: 1030;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid $border-soft;
+  background: $white;
 }
 
 .brand-lockup {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  max-width: 22rem;
-  color: #2f3337 !important;
-  line-height: 1.15;
+  min-width: 0;
+  margin-right: 2rem;
+  padding: 0;
+  color: $ink !important;
+  line-height: 1.2;
   text-decoration: none;
+
+  img {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 auto;
+    object-fit: contain;
+  }
+
+  span {
+    display: grid;
+    min-width: 0;
+  }
+
+  strong {
+    overflow: hidden;
+    font-family: $headings-font-family;
+    font-size: 1rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    overflow: hidden;
+    color: $muted;
+    font-size: 0.75rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
-.brand-lockup img {
-  width: 3.25rem;
-  height: 3.25rem;
-  flex: 0 0 auto;
-  border: 1px solid rgb(47 51 55 / 8%);
-  border-radius: 1rem;
-  object-fit: contain;
-  background: $white;
-  box-shadow: 0 8px 20px rgb(47 51 55 / 10%);
-}
-
-.brand-lockup span {
-  display: grid;
-  gap: 0.15rem;
-}
-
-.brand-lockup strong {
-  font-size: 1.02rem;
-  font-weight: 900;
-}
-
-.brand-lockup small {
-  color: $gray-600;
-  font-size: 0.72rem;
-  font-weight: 600;
-  white-space: normal;
+.site-navbar .navbar-toggler {
+  padding: 0.5rem 0.625rem;
+  border-color: $border-soft;
+  border-radius: $border-radius;
 }
 
 .site-nav-links {
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem;
-  border: 1px solid rgb(47 51 55 / 8%);
-  border-radius: 999px;
-  background: rgb(247 244 241 / 78%);
-}
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 
-.site-nav-links .nav-link {
-  padding: 0.48rem 0.9rem !important;
-  border-radius: 999px;
-  color: #4a4f54;
-  font-size: 0.93rem;
-  font-weight: 800;
-}
+  .nav-link {
+    position: relative;
+    padding: 0.5rem 0.75rem !important;
+    color: $body-color;
+    font-size: 0.9688rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color 0.15s ease;
 
-.site-nav-links .nav-link.active,
-.site-nav-links .nav-link:hover {
-  background: $white;
-  color: $primary;
-  box-shadow: 0 8px 18px rgb(47 51 55 / 8%);
+    &:hover {
+      color: $ink;
+    }
+
+    &.active {
+      color: $ink;
+      font-weight: 600;
+    }
+
+    // Underline marks the current page (not colour alone)
+    &.active::after {
+      content: '';
+      position: absolute;
+      right: 0.75rem;
+      bottom: -0.9rem; // sits on the navbar's bottom border
+      left: 0.75rem;
+      height: 2px;
+      background: $primary;
+    }
+  }
 }
 
 .site-nav-actions {
+  display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 1rem;
+  margin-left: 1.75rem;
+  padding-left: 1.75rem;
+  border-left: 1px solid $border-soft;
 }
 
-.site-nav-actions .nav-link {
-  color: #4a4f54;
-  font-weight: 800;
+.site-nav-call {
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
-.site-nav-actions .login-link:hover {
-  color: $primary;
+// Only shown inside the mobile menu (desktop has the floating WhatsApp button).
+// Scoped selector so it wins over the shared .btn display rule.
+.site-nav-actions .site-nav-whatsapp {
+  display: none;
 }
 
-.nav-cta {
-  padding: 0.58rem 1rem !important;
-  border-radius: 999px;
-  background: $primary;
-  color: $white !important;
-  box-shadow: 0 12px 24px rgb(196 0 22 / 22%);
+.site-nav-lang {
+  padding: 0.25rem 0;
+  border: 0;
+  border-bottom: 1px dashed $border-strong;
+  background: none;
+  color: $body-color;
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  &:hover {
+    border-bottom-color: $ink;
+    color: $ink;
+  }
 }
 
-.nav-cta:hover {
-  background: #9f0012;
+// ---------------------------------------------------------------
+// Tablet: tighter spacing, hide the topbar's secondary links
+// ---------------------------------------------------------------
+
+@include media-breakpoint-down(xl) {
+  .site-nav-links .nav-link {
+    padding-inline: 0.5rem !important;
+
+    &.active::after {
+      right: 0.5rem;
+      left: 0.5rem;
+    }
+  }
+
+  .site-nav-actions {
+    margin-left: 1rem;
+    padding-left: 1rem;
+  }
+
+  .brand-lockup {
+    margin-right: 1rem;
+
+    strong {
+      font-size: 0.9375rem;
+    }
+  }
+
 }
 
-.mock-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.55rem;
-  border-radius: 999px;
-  background: rgb(47 51 55 / 8%);
-  color: #4a4f54;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+// ---------------------------------------------------------------
+// Mobile menu
+// ---------------------------------------------------------------
+
+@include media-breakpoint-down(lg) {
+  .site-topbar__links {
+    display: none;
+  }
+
+  .site-navbar .navbar-collapse {
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid $border-soft;
+  }
+
+  .site-nav-links .nav-link {
+    padding: 0.75rem 0 !important;
+    border-bottom: 1px solid $surface-soft;
+    font-size: 1rem;
+
+    &.active::after {
+      top: 0.75rem;
+      right: auto;
+      bottom: 0.75rem;
+      left: -0.75rem;
+      width: 3px;
+      height: auto;
+    }
+  }
+
+  .site-nav-actions {
+    flex-wrap: wrap;
+    margin: 1rem 0 0.5rem;
+    padding: 0;
+    border: 0;
+  }
+
+  .site-nav-call {
+    flex: 1;
+    padding-block: 0.625rem;
+  }
+
+  .site-nav-actions .site-nav-whatsapp {
+    display: inline-flex;
+    flex: 1;
+  }
+}
+
+@include media-breakpoint-down(md) {
+  .site-topbar {
+    display: none;
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .brand-lockup {
+    max-width: calc(100% - 3.75rem);
+    margin-right: 0;
+
+    img {
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+
+    strong {
+      font-size: 0.9375rem;
+    }
+
+    small {
+      font-size: 0.75rem;
+    }
+  }
 }

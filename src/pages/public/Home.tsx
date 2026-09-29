@@ -1,33 +1,50 @@
+import type { ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Accordion, Carousel, Col, Container, Row, Card } from 'react-bootstrap'
+import { Accordion, Col, Container, Row, Card } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { getBannerImage, getBanners } from '../../api/banners'
+import { getBanners } from '../../api/banners'
 import { getFaqs } from '../../api/faqs'
 import { getProperties } from '../../api/properties'
 import { getTestimonialAvatar, getTestimonials } from '../../api/testimonials'
 import { getBlogs } from '../../api/blogs'
+import { EmptyState } from '../../components/common/EmptyState'
 import { ErrorState } from '../../components/common/ErrorState'
 import { Loader } from '../../components/common/Loader'
+import { CheckIcon } from '../../components/common/Icons'
+import { HomeHero } from '../../components/home/HomeHero'
+import { HomeOffices } from '../../components/home/HomeOffices'
 import { PropertyCard } from '../../components/property/PropertyCard'
 import { companyInfo } from '../../constants/companyInfo'
-import { useLanguage } from '../../context/LanguageContext'
-import {
-  translateTestimonial,
-  translateFaq,
-  translateBlog,
-} from '../../utils/translateHelpers'
+import { useLanguage } from '../../hooks/useLanguage'
+import { usePageMeta } from '../../hooks/usePageMeta'
+import { optimizedImageUrl } from '../../utils/images'
+
+// Plain section heading: title, one line of context, and an optional text link.
+function SectionHeader({ title, intro, link }: { title: string; intro?: string; link?: ReactNode }) {
+  return (
+    <div className="home-section-header">
+      <div>
+        <h2>{title}</h2>
+        {intro ? <p>{intro}</p> : null}
+      </div>
+      {link}
+    </div>
+  )
+}
 
 export function Home() {
   const { t, language } = useLanguage()
   const isNp = language === 'np'
+  usePageMeta({})
 
   const bannersQuery = useQuery({
     queryKey: ['banners'],
     queryFn: getBanners,
   })
+  // Backend orders featured listings first.
   const propertiesQuery = useQuery({
-    queryKey: ['properties'],
-    queryFn: getProperties,
+    queryKey: ['properties', 'home'],
+    queryFn: () => getProperties({ limit: 6 }),
   })
   const testimonialsQuery = useQuery({
     queryKey: ['testimonials'],
@@ -43,11 +60,10 @@ export function Home() {
   })
 
   const banners = bannersQuery.data ?? []
-  const featuredProperties = (propertiesQuery.data ?? []).slice(0, 6)
+  const featuredProperties = propertiesQuery.data ?? []
   const testimonials = (testimonialsQuery.data ?? []).slice(0, 3)
   const faqs = (faqsQuery.data ?? []).slice(0, 3)
   const latestBlogs = (blogsQuery.data ?? []).slice(0, 3)
-  const isHeroLoading = bannersQuery.isLoading || propertiesQuery.isLoading
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return ''
@@ -59,73 +75,41 @@ export function Home() {
     })
   }
 
+  const services = [t('service1'), t('service2'), t('service3'), t('service4')]
+  const viewAllLink = (to: string) => (
+    <Link to={to} className="home-section-header__link">
+      {t('viewAll')} <span aria-hidden="true">→</span>
+    </Link>
+  )
+
   return (
-    <main>
-
-      <section className="home-hero p-0">
-        {banners.length > 0 ? (
-          <Carousel className="home-hero__carousel rounded-0 border-0 shadow-none" indicators={banners.length > 1}>
-            {banners.map((banner) => {
-              const imageUrl = getBannerImage(banner)
-
-              return (
-                <Carousel.Item key={String(banner._id ?? banner.id ?? banner.title)}>
-                  {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt={banner.title ?? 'Featured real estate banner'}
-                      className="home-hero__image"
-                    />
-                  ) : (
-                    <div className="home-hero__image home-hero__image--empty" />
-                  )}
-                  <Carousel.Caption>
-                    <Container>
-                      <p className="eyebrow">{isNp ? companyInfo.nameNp : companyInfo.nameEn}</p>
-                      <h1>{isNp ? (banner.title ?? 'सुरक्षित लगानी, सही सम्पत्ति छनोट।') : companyInfo.taglineEn}</h1>
-                      <Link to="/properties" className="btn btn-primary btn-lg">
-                        {t('heroBtn')}
-                      </Link>
-                    </Container>
-                  </Carousel.Caption>
-                </Carousel.Item>
-              )
-            })}
-          </Carousel>
-        ) : (
-          <div className="home-hero__fallback rounded-0 border-0 shadow-none">
-            <Container>
-              <p className="eyebrow text-primary">{isNp ? companyInfo.nameNp : companyInfo.nameEn}</p>
-              <h1>{isNp ? 'सुरक्षित लगानी, सही सम्पत्ति छनोट।' : 'Secure Investment, Right Property Choice.'}</h1>
-              <p>{isNp ? companyInfo.shortIntroNp : 'Trusted real estate service for buying, selling, and plotting properties in Kailali, Nepal.'}</p>
-              <Link to="/properties" className="btn btn-primary btn-lg">
-                {t('heroBtn')}
-              </Link>
-            </Container>
-          </div>
-        )}
-        {isHeroLoading ? <Loader label="Loading home listings..." /> : null}
-      </section>
-
+    <div className="home-page">
+      <HomeHero banners={banners} latestProperty={featuredProperties[0]} />
 
       <section className="section-block">
         <Container>
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow text-primary">{t('featuredSubtitle')}</p>
-              <h2>{t('featuredProperties')}</h2>
-            </div>
-            <Link to="/properties" className="btn btn-outline-primary">
-              {t('viewAll')}
-            </Link>
-          </div>
+          <SectionHeader
+            title={isNp ? 'हालै थपिएका सम्पत्ति' : 'Recently listed'}
+            intro={isNp ? 'बिक्रीका लागि उपलब्ध जग्गा, घर र फ्ल्याटहरू।' : 'Land, houses and flats currently available.'}
+            link={viewAllLink('/properties')}
+          />
+          {propertiesQuery.isLoading ? <Loader label={isNp ? 'सम्पत्तिहरू लोड हुँदैछ…' : 'Loading properties…'} /> : null}
           {propertiesQuery.isError ? (
-            <ErrorState title="Could not load featured properties" />
+            <ErrorState
+              title={isNp ? 'सम्पत्तिहरू लोड गर्न सकिएन' : 'Could not load properties'}
+              message={isNp ? 'कृपया केही समयपछि फेरि प्रयास गर्नुहोस्।' : 'Please refresh the page or try again shortly.'}
+            />
+          ) : null}
+          {propertiesQuery.isSuccess && featuredProperties.length === 0 ? (
+            <EmptyState
+              title={isNp ? 'हाल कुनै सम्पत्ति उपलब्ध छैन' : 'No properties available at the moment'}
+              message={isNp ? 'छिट्टै नयाँ सम्पत्ति थपिनेछ। थप जानकारीका लागि सम्पर्क गर्नुहोस्।' : 'New listings are added regularly. Contact us to tell us what you are looking for.'}
+            />
           ) : null}
           {!propertiesQuery.isError && featuredProperties.length > 0 ? (
             <Row xs={1} md={2} lg={3} className="g-4">
               {featuredProperties.map((property) => (
-                <Col key={String(property._id ?? property.id ?? property.title)}>
+                <Col key={property.id}>
                   <PropertyCard property={property} />
                 </Col>
               ))}
@@ -134,132 +118,105 @@ export function Home() {
         </Container>
       </section>
 
-
-      <section className="section-block experience-band">
+      <section className="section-block home-about" aria-labelledby="home-about-title">
         <Container>
-          <Row className="g-5 align-items-center">
-            <Col lg={5}>
-              <div className="founder-card">
-                <img src="/founder.png" alt={isNp ? companyInfo.founderTitleNp : 'Founder'} />
-                <div className="founder-card__caption">
-                  <strong>{isNp ? companyInfo.founderTitleNp : 'Founder & MD'}</strong>
-                  <span>{isNp ? companyInfo.nameNp : companyInfo.nameEn}</span>
-                </div>
-              </div>
-            </Col>
-            <Col lg={7}>
-              <p className="eyebrow">{t('aboutUs')}</p>
-              <h2>{isNp ? '१० वर्षको अनुभव र विश्वास' : '10 Years of Trust & Experience'}</h2>
-              <p className="experience-band__copy">{isNp ? companyInfo.aboutNp : companyInfo.aboutEn}</p>
-              <blockquote>
-                "{isNp ? companyInfo.founderMessageNp : 'Our priority is client trust, transparent transactions, and secure investments.'}"
-              </blockquote>
-              <div className="experience-list">
-                <span>{t('service1')}</span>
-                <span>{t('service2')}</span>
-                <span>{t('service3')}</span>
-                <span>{t('service4')}</span>
-              </div>
-              <Link to="/about" className="btn btn-outline-light mt-4 px-4">
-                {t('readMore')} →
+          <div className="home-about__grid">
+            <div>
+              <h2 id="home-about-title" className="home-about__title">
+                {isNp ? '१० वर्षदेखि कैलालीको घर-जग्गा कारोबारमा' : 'Ten years in Kailali real estate'}
+              </h2>
+              <p className="home-about__text">{isNp ? companyInfo.teaserNp : companyInfo.teaserEn}</p>
+              <Link to="/about" className="home-section-header__link">
+                {isNp ? 'हाम्रो बारेमा थप पढ्नुहोस्' : 'More about us'} <span aria-hidden="true">→</span>
               </Link>
-            </Col>
-          </Row>
+            </div>
+            <ul className="home-about__services" aria-label={isNp ? 'हाम्रा सेवाहरू' : 'Our services'}>
+              {services.map((service) => (
+                <li key={service}>
+                  <CheckIcon />
+                  <span>{service}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </Container>
       </section>
 
-
-      <section className="section-block bg-white">
+      {blogsQuery.isLoading || latestBlogs.length > 0 ? (
+      <section className="section-block">
         <Container>
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow text-primary">{t('latestBlogsSubtitle')}</p>
-              <h2>{t('latestBlogs')}</h2>
-            </div>
-            <Link to="/blogs" className="btn btn-outline-primary">
-              {t('viewAll')}
-            </Link>
-          </div>
-          {blogsQuery.isLoading ? <Loader label="Loading articles..." /> : null}
-          {blogsQuery.isError ? <ErrorState title="Could not load blog posts" /> : null}
+          <SectionHeader title={t('latestBlogs')} intro={t('latestBlogsSubtitle')} link={viewAllLink('/blogs')} />
+          {blogsQuery.isLoading ? <Loader label={isNp ? 'लेखहरू लोड हुँदैछ…' : 'Loading articles…'} /> : null}
+          {blogsQuery.isError ? <ErrorState title={isNp ? 'लेखहरू लोड गर्न सकिएन' : 'Could not load blog posts'} /> : null}
           {!blogsQuery.isError && latestBlogs.length > 0 ? (
             <Row xs={1} md={2} lg={3} className="g-4">
-              {latestBlogs.map((blog) => {
-                const translated = translateBlog(blog, language)
-                return (
-                  <Col key={String(blog._id ?? blog.id)}>
-                    <Card className="h-100 border-0 shadow-sm blog-card-premium overflow-hidden transition-all duration-300">
-                      <div className="blog-card-img-wrapper position-relative">
+              {latestBlogs.map((blog) => (
+                <Col key={String(blog.id)}>
+                  <Card className="h-100 border-0 shadow-sm blog-card-premium overflow-hidden">
+                    <div className="blog-card-img-wrapper position-relative">
+                      {blog.coverImage ? (
                         <img
-                          src={blog.coverImage || '/placeholder-image.png'}
-                          alt={translated.title}
+                          src={optimizedImageUrl(blog.coverImage, 640)}
+                          alt=""
                           className="w-100 object-fit-cover"
                           style={{ height: '200px' }}
+                          loading="lazy"
                         />
-                        <div className="blog-card-badge position-absolute top-0 start-0 m-3 badge bg-primary">
-                          {isNp ? 'जानकारी' : 'Insight'}
-                        </div>
+                      ) : (
+                        <div className="blog-card-img-placeholder" aria-hidden="true" />
+                      )}
+                    </div>
+                    <Card.Body className="p-4 d-flex flex-column">
+                      <div className="blog-card-meta d-flex justify-content-between text-muted mb-2" style={{ fontSize: '0.85rem' }}>
+                        <span>{blog.author || 'Admin'}</span>
+                        <span>{formatDate(blog.createdAt)}</span>
                       </div>
-                      <Card.Body className="p-4 d-flex flex-column">
-                        <div className="blog-card-meta d-flex justify-content-between text-muted mb-2" style={{ fontSize: '0.85rem' }}>
-                          <span>By {blog.author || 'Admin'}</span>
-                          <span>{formatDate(blog.createdAt)}</span>
-                        </div>
-                        <Card.Title className="h5 fw-bold mb-3 text-dark line-clamp-2">
-                          {translated.title}
-                        </Card.Title>
-                        <Card.Text className="text-muted line-clamp-3 mb-4" style={{ fontSize: '0.92rem', lineHeight: '1.6' }}>
-                          {translated.content}
-                        </Card.Text>
-                        <Link
-                          to={`/blogs/${blog.slug}`}
-                          className="mt-auto text-primary fw-bold text-decoration-none d-inline-flex align-items-center gap-1 hover-gap"
-                        >
-                          {isNp ? 'थप पढ्नुहोस्' : 'Read Full Article'} &rarr;
-                        </Link>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                )
-              })}
+                      <Card.Title as="h3" className="h5 fw-bold mb-3 text-dark line-clamp-2">
+                        {blog.title}
+                      </Card.Title>
+                      <Card.Text className="text-muted line-clamp-3 mb-4" style={{ fontSize: '0.92rem', lineHeight: '1.6' }}>
+                        {blog.content}
+                      </Card.Text>
+                      <Link to={`/blogs/${blog.slug}`} className="mt-auto home-section-header__link">
+                        {isNp ? 'पूरा पढ्नुहोस्' : 'Read article'} <span aria-hidden="true">→</span>
+                      </Link>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
             </Row>
           ) : null}
         </Container>
       </section>
+      ) : null}
 
-
+      {testimonialsQuery.isLoading || testimonials.length > 0 ? (
       <section className="section-block section-block--soft">
         <Container>
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow text-primary">{t('testiSubtitle')}</p>
-              <h2>{t('testimonials')}</h2>
-            </div>
-          </div>
-          {testimonialsQuery.isLoading ? <Loader label="Loading testimonials..." /> : null}
-          {testimonialsQuery.isError ? <ErrorState title="Could not load testimonials" /> : null}
+          <SectionHeader title={t('testimonials')} intro={t('testiSubtitle')} />
+          {testimonialsQuery.isLoading ? <Loader label={isNp ? 'लोड हुँदैछ…' : 'Loading…'} /> : null}
+          {testimonialsQuery.isError ? <ErrorState title={isNp ? 'लोड गर्न सकिएन' : 'Could not load testimonials'} /> : null}
           {!testimonialsQuery.isError && testimonials.length > 0 ? (
             <Row xs={1} md={3} className="g-4">
               {testimonials.map((testimonial) => {
-                const translated = translateTestimonial(testimonial, language)
-                const avatar = getTestimonialAvatar(translated)
+                const avatar = getTestimonialAvatar(testimonial)
 
                 return (
-                  <Col key={String(translated._id ?? translated.id ?? translated.clientName)}>
-                    <article className="testimonial-card">
-                      <div className="testimonial-card__person">
+                  <Col key={String(testimonial.id ?? testimonial.clientName)}>
+                    <figure className="testimonial-card">
+                      <blockquote className="mb-3">{testimonial.message}</blockquote>
+                      <figcaption className="testimonial-card__person mb-0">
                         {avatar ? (
-                          <img src={avatar} alt={translated.clientName ?? 'Client'} />
+                          <img src={avatar} alt="" />
                         ) : (
-                          <span>{translated.clientName?.charAt(0) ?? 'C'}</span>
+                          <span aria-hidden="true">{testimonial.clientName?.charAt(0) ?? 'C'}</span>
                         )}
                         <div>
-                          <h3>{translated.clientName ?? 'Happy client'}</h3>
-                          <p>{translated.role ?? translated.company ?? 'Client'}</p>
+                          <h3>{testimonial.clientName}</h3>
+                          {testimonial.role || testimonial.company ? <p>{testimonial.role ?? testimonial.company}</p> : null}
                         </div>
-                      </div>
-                      <p className="mb-0">{translated.message}</p>
-                    </article>
+                      </figcaption>
+                    </figure>
                   </Col>
                 )
               })}
@@ -267,43 +224,35 @@ export function Home() {
           ) : null}
         </Container>
       </section>
+      ) : null}
 
-
+      {faqsQuery.isLoading || faqs.length > 0 ? (
       <section className="section-block">
         <Container>
           <Row className="g-4 align-items-start">
             <Col lg={5}>
-              <p className="eyebrow text-primary">{t('faqsEyebrow')}</p>
-              <h2>{t('faqs')}</h2>
-              <p className="text-muted">
-                {t('faqsSubtitle')}
-              </p>
+              <SectionHeader title={t('faqs')} intro={t('faqsSubtitle')} />
             </Col>
             <Col lg={7}>
-              {faqsQuery.isLoading ? <Loader label="Loading FAQs..." /> : null}
-              {faqsQuery.isError ? <ErrorState title="Could not load FAQs" /> : null}
+              {faqsQuery.isLoading ? <Loader label={isNp ? 'लोड हुँदैछ…' : 'Loading…'} /> : null}
+              {faqsQuery.isError ? <ErrorState title={isNp ? 'लोड गर्न सकिएन' : 'Could not load FAQs'} /> : null}
               {!faqsQuery.isError && faqs.length > 0 ? (
                 <Accordion className="faq-accordion">
-                  {faqs.map((faq, index) => {
-                    const translated = translateFaq(faq, language)
-                    return (
-                      <Accordion.Item
-                        eventKey={String(index)}
-                        key={String(translated._id ?? translated.id ?? translated.question)}
-                      >
-                        <Accordion.Header>
-                          {translated.question ?? 'Question unavailable'}
-                        </Accordion.Header>
-                        <Accordion.Body>{translated.answer ?? 'Answer coming soon.'}</Accordion.Body>
-                      </Accordion.Item>
-                    )
-                  })}
+                  {faqs.map((faq, index) => (
+                    <Accordion.Item eventKey={String(index)} key={String(faq.id ?? faq.question)}>
+                      <Accordion.Header>{faq.question}</Accordion.Header>
+                      <Accordion.Body>{faq.answer}</Accordion.Body>
+                    </Accordion.Item>
+                  ))}
                 </Accordion>
               ) : null}
             </Col>
           </Row>
         </Container>
       </section>
-    </main>
+      ) : null}
+
+      <HomeOffices />
+    </div>
   )
 }

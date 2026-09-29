@@ -1,13 +1,5 @@
 import axiosInstance from './axiosInstance'
-import { USE_MOCK_API } from '../mocks/mockApi'
 
-// Import mock functions that we will add to mockApi.ts
-import {
-  mockGetBlogs,
-  mockGetBlogBySlug,
-  mockCreateBlog,
-  mockDeleteBlog,
-} from '../mocks/mockApi'
 
 type ApiResponse = {
   success?: boolean
@@ -69,47 +61,39 @@ const normalizeBlog = (response: ApiResponse): BlogPost => {
 }
 
 export const getBlogs = async (): Promise<BlogPost[]> => {
-  if (USE_MOCK_API) {
-    return mockGetBlogs()
-  }
 
   const response = await axiosInstance.get<ApiResponse>('/blogs')
   return normalizeBlogs(response.data)
 }
 
 export const getBlogBySlug = async (slug: string): Promise<BlogPost> => {
-  if (USE_MOCK_API) {
-    return mockGetBlogBySlug(slug)
-  }
 
   const response = await axiosInstance.get<ApiResponse>(`/blogs/${slug}`)
   return normalizeBlog(response.data)
 }
 
-export const createBlog = async (payload: BlogFormPayload): Promise<BlogPost> => {
-  if (USE_MOCK_API) {
-    return mockCreateBlog(payload)
-  }
-
+const buildBlogFormData = (payload: BlogFormPayload) => {
   const formData = new FormData()
   formData.append('title', payload.title)
   formData.append('content', payload.content)
-  if (payload.author) {
-    formData.append('author', payload.author)
-  }
+  formData.append('author', payload.author ?? '')
   if (payload.coverImage && payload.coverImage.length > 0) {
     formData.append('coverImage', payload.coverImage[0])
   }
+  return formData
+}
 
-  const response = await axiosInstance.post<ApiResponse>('/blogs', formData)
+export const createBlog = async (payload: BlogFormPayload): Promise<BlogPost> => {
+  const response = await axiosInstance.post<ApiResponse>('/blogs', buildBlogFormData(payload))
+  return normalizeBlog(response.data)
+}
+
+export const updateBlog = async (id: string | number, payload: BlogFormPayload): Promise<BlogPost> => {
+  const response = await axiosInstance.put<ApiResponse>(`/blogs/${id}`, buildBlogFormData(payload))
   return normalizeBlog(response.data)
 }
 
 export const deleteBlog = async (id: string | number): Promise<void> => {
-  if (USE_MOCK_API) {
-    mockDeleteBlog(id)
-    return
-  }
 
   const response = await axiosInstance.delete<ApiResponse>(`/blogs/${id}`)
   if (response.data.success === false) {

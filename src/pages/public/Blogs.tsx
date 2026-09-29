@@ -6,8 +6,8 @@ import { getBlogs, type BlogPost } from '../../api/blogs'
 import { Loader } from '../../components/common/Loader'
 import { ErrorState } from '../../components/common/ErrorState'
 import { EmptyState } from '../../components/common/EmptyState'
-import { useLanguage } from '../../context/LanguageContext'
-import { translateBlog } from '../../utils/translateHelpers'
+import { useLanguage } from '../../hooks/useLanguage'
+import { optimizedImageUrl } from '../../utils/images'
 
 export function Blogs() {
   const { language } = useLanguage()
@@ -37,20 +37,15 @@ export function Blogs() {
   }
 
   return (
-    <main className="blogs-page-layout">
-      {/* Premium Hero Section */}
-      <section className="blogs-hero py-5 text-center text-white">
-        <Container className="py-4">
-          <p className="eyebrow text-primary text-uppercase fw-bold tracking-wider mb-2">
-            {isNp ? 'ज्ञान र जानकारी' : 'Knowledge & Insights'}
-          </p>
-          <h1 className="display-4 fw-extrabold mb-3">
-            {isNp ? 'हाम्रो ब्लग र समाचार' : 'Our Blog & News'}
-          </h1>
-          <p className="lead mx-auto text-light opacity-75" style={{ maxWidth: '600px' }}>
+    <div className="blogs-page-layout">
+      <section className="page-hero">
+        <Container>
+          <p className="eyebrow">{isNp ? 'ब्लग' : 'Blog'}</p>
+          <h1 className="page-hero__title">{isNp ? 'घर-जग्गा सम्बन्धी जानकारी' : 'Property guides & news'}</h1>
+          <p className="page-hero__subtitle">
             {isNp
-              ? 'घर-जग्गा खरिद, बिक्री, र लगानी सम्बन्धी महत्वपूर्ण सुझाव तथा ताजा अपडेटहरू।'
-              : 'Important guides, tips, and updates regarding property buying, selling, and investment.'}
+              ? 'घर-जग्गा खरिद, बिक्री र लगानी सम्बन्धी सुझाव तथा ताजा अपडेटहरू।'
+              : 'Tips and updates on buying, selling and investing in property.'}
           </p>
         </Container>
       </section>
@@ -86,17 +81,22 @@ export function Blogs() {
         ) : (
           <Row xs={1} md={2} lg={3} className="g-4">
             {filteredBlogs.map((blog) => {
-              const translated = translateBlog(blog, language)
+              const translated = blog
               return (
                 <Col key={String(blog._id ?? blog.id)}>
                   <Card className="h-100 border-0 shadow-sm blog-card-premium overflow-hidden transition-all duration-300">
                     <div className="blog-card-img-wrapper position-relative">
-                      <img
-                        src={blog.coverImage || '/placeholder-image.png'}
-                        alt={translated.title}
-                        className="w-100 object-fit-cover"
-                        style={{ height: '220px' }}
-                      />
+                      {blog.coverImage ? (
+                        <img
+                          src={optimizedImageUrl(blog.coverImage, 640)}
+                          alt=""
+                          className="w-100 object-fit-cover"
+                          style={{ height: '220px' }}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="blog-card-img-placeholder" aria-hidden="true" />
+                      )}
                       <div className="blog-card-badge position-absolute top-0 start-0 m-3 badge bg-primary">
                         {isNp ? 'जानकारी' : 'Insight'}
                       </div>
@@ -126,6 +126,6 @@ export function Blogs() {
           </Row>
         )}
       </Container>
-    </main>
+    </div>
   )
 }

@@ -1,137 +1,146 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
-import { Alert, Button, Card, Col, Form, Row, Table } from 'react-bootstrap'
+import { useState } from 'react'
+import { Accordion, Alert, Button, Col, Form, Row } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
-import {
-  createFaq,
-  deleteFaq,
-  getFaqs,
-  updateFaq,
-  type Faq,
-  type FaqFormPayload,
-} from '../../api/faqs'
+import { getApiErrorMessage } from '../../api/axiosInstance'
+import { createFaq, deleteFaq, getFaqs, updateFaq, type Faq, type FaqFormPayload } from '../../api/faqs'
+import { ErrorState } from '../../components/common/ErrorState'
 import { Loader } from '../../components/common/Loader'
 
-const emptyFaqForm: FaqFormPayload = {
-  question: '',
-  answer: '',
-  category: '',
-}
+const emptyForm: FaqFormPayload = { question: '', answer: '', category: '' }
 
 export function FaqsManage() {
   const queryClient = useQueryClient()
-  const [editingFaq, setEditingFaq] = useState<Faq | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
-  const { data = [], isLoading } = useQuery({ queryKey: ['faqs'], queryFn: getFaqs })
-  const { register, handleSubmit, reset } = useForm<FaqFormPayload>({
-    defaultValues: emptyFaqForm,
-  })
+  const [editing, setEditing] = useState<Faq | null>(null)
+  const [notice, setNotice] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
+  const { data: faqs = [], isLoading, isError } = useQuery({ queryKey: ['faqs'], queryFn: getFaqs })
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FaqFormPayload>({ defaultValues: emptyForm })
 
-  useEffect(() => {
-    reset(
-      editingFaq
-        ? {
-            question: editingFaq.question ?? '',
-            answer: editingFaq.answer ?? '',
-            category: editingFaq.category ?? '',
-          }
-        : emptyFaqForm,
-    )
-  }, [editingFaq, reset])
+  const startEdit = (faq: Faq | null) => {
+    setEditing(faq)
+    reset(faq ? { question: faq.question ?? '', answer: faq.answer ?? '', category: faq.category ?? '' } : emptyForm)
+    if (faq) window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['faqs'] })
 
   const saveMutation = useMutation({
-    mutationFn: (payload: FaqFormPayload) => {
-      const faqId = editingFaq?._id ?? editingFaq?.id
-      return faqId ? updateFaq(faqId, payload) : createFaq(payload)
-    },
+    mutationFn: (payload: FaqFormPayload) => (editing?.id ? updateFaq(editing.id, payload) : createFaq(payload)),
     onSuccess: async () => {
-      setMessage('FAQ saved.')
-      setEditingFaq(null)
-      await queryClient.invalidateQueries({ queryKey: ['faqs'] })
+      setNotice({ type: 'success', text: editing ? 'Question updated.' : 'Question added.' })
+      startEdit(null)
+      await invalidate()
     },
+    onError: (error) => setNotice({ type: 'danger', text: getApiErrorMessage(error, 'The question could not be saved.') }),
   })
+
   const deleteMutation = useMutation({
-    mutationFn: deleteFaq,
+    mutationFn: (faq: Faq) => deleteFaq(faq.id as number),
     onSuccess: async () => {
-      setMessage('FAQ deleted.')
-      await queryClient.invalidateQueries({ queryKey: ['faqs'] })
+      setNotice({ type: 'success', text: 'Question deleted.' })
+      await invalidate()
     },
+    onError: (error) => setNotice({ type: 'danger', text: getApiErrorMessage(error, 'The question could not be deleted.') }),
   })
 
   return (
     <section>
-      <p className="eyebrow text-primary">Admin</p>
-      <h1 className="h2 fw-bold mb-4">Manage FAQs</h1>
-      {message ? <Alert variant="success">{message}</Alert> : null}
-      {saveMutation.isError ? <Alert variant="danger">FAQ save failed.</Alert> : null}
-      <Card className="border-0 shadow-sm mb-4">
-        <Card.Body>
-          <Form onSubmit={handleSubmit((payload) => saveMutation.mutate(payload))}>
-            <Row className="g-3">
-              <Col md={6}>
-                <Form.Label>Question</Form.Label>
-                <Form.Control {...register('question', { required: true })} />
-              </Col>
-              <Col md={6}>
-                <Form.Label>Category</Form.Label>
-                <Form.Control {...register('category', { required: true })} />
-              </Col>
-              <Col md={12}>
-                <Form.Label>Answer</Form.Label>
+      <div className="admin-page-header">
+        <div>
+          <h1 className="admin-page-title">FAQs</h1>
+          <p className="text-muted mb-0">Answers to questions buyers often ask. The first three appear on the home page.</p>
+        </div>
+      </div>
+
+      {notice ? <Alert variant={notice.type} dismissible onClose={() => setNotice(null)}>{notice.text}</Alert> : null}
+
+      <div className="admin-panel">
+        <h2 className="h6 fw-bold mb-3">{editing ? 'Edit question' : 'Add a question'}</h2>
+        <Form onSubmit={handleSubmit((payload) => { setNotice(null); saveMutation.mutate(payload) })} noValidate>
+          <Row className="g-3">
+            <Col md={8}>
+              <Form.Group controlId="faq-question">
+                <Form.Label>Question <span className="form-required">*</span></Form.Label>
+                <Form.Control
+                  placeholder="e.g. मूल्य नेपाली रुपैयाँमा हो?"
+                  isInvalid={Boolean(errors.question)}
+                  {...register('question', {
+                    required: 'Question is required.',
+                    minLength: { value: 3, message: 'Question is too short.' },
+                  })}
+                />
+                <Form.Control.Feedback type="invalid">{errors.question?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group controlId="faq-category">
+                <Form.Label>Category <span className="form-optional">(optional)</span></Form.Label>
+                <Form.Control placeholder="General" {...register('category', { maxLength: 100 })} />
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <Form.Group controlId="faq-answer">
+                <Form.Label>Answer <span className="form-required">*</span></Form.Label>
                 <Form.Control
                   as="textarea"
-                  rows={3}
-                  {...register('answer', { required: true })}
+                  rows={4}
+                  isInvalid={Boolean(errors.answer)}
+                  {...register('answer', { required: 'Answer is required.' })}
                 />
-              </Col>
-            </Row>
-            <div className="mt-3 d-flex gap-2">
-              <Button type="submit" disabled={saveMutation.isPending}>
-                {editingFaq ? 'Update FAQ' : 'Create FAQ'}
-              </Button>
-              {editingFaq ? (
-                <Button variant="outline-secondary" onClick={() => setEditingFaq(null)}>
-                  Cancel
-                </Button>
-              ) : null}
-            </div>
-          </Form>
-        </Card.Body>
-      </Card>
+                <Form.Control.Feedback type="invalid">{errors.answer?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+          <div className="mt-3 d-flex gap-2">
+            <Button type="submit" disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? 'Saving…' : editing ? 'Save changes' : 'Add question'}
+            </Button>
+            {editing ? <Button variant="outline-secondary" onClick={() => startEdit(null)}>Cancel</Button> : null}
+          </div>
+        </Form>
+      </div>
+
       {isLoading ? <Loader /> : null}
-      <Table responsive hover className="admin-table bg-white">
-        <thead>
-          <tr>
-            <th>Question</th>
-            <th>Category</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((faq) => {
-            const faqId = faq._id ?? faq.id
-            return (
-              <tr key={String(faqId ?? faq.question)}>
-                <td>{faq.question}</td>
-                <td>{faq.category}</td>
-                <td className="text-end">
-                  <Button size="sm" variant="outline-primary" onClick={() => setEditingFaq(faq)}>
-                    Edit
-                  </Button>{' '}
+      {isError ? <ErrorState title="Could not load FAQs" /> : null}
+      {!isLoading && !isError && faqs.length === 0 ? (
+        <div className="admin-panel"><p className="admin-panel__empty">No questions yet. The home page hides the FAQ section until you add one.</p></div>
+      ) : null}
+
+      {faqs.length > 0 ? (
+        <Accordion className="faq-accordion admin-faq-list">
+          {faqs.map((faq, index) => (
+            <Accordion.Item eventKey={String(index)} key={String(faq.id)}>
+              <Accordion.Header>
+                <span>
+                  {faq.question}
+                  {faq.category ? <span className="badge-pill badge-pill--soft ms-2">{faq.category}</span> : null}
+                </span>
+              </Accordion.Header>
+              <Accordion.Body>
+                <p className="mb-3" style={{ whiteSpace: 'pre-line' }}>{faq.answer}</p>
+                <div className="admin-row-actions">
+                  <Button size="sm" variant="outline-primary" onClick={() => startEdit(faq)}>Edit</Button>
                   <Button
                     size="sm"
                     variant="outline-danger"
-                    disabled={!faqId || deleteMutation.isPending}
-                    onClick={() => faqId && deleteMutation.mutate(faqId)}
+                    disabled={deleteMutation.isPending}
+                    onClick={() => {
+                      if (confirm('Delete this question?')) deleteMutation.mutate(faq)
+                    }}
                   >
                     Delete
                   </Button>
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </Table>
+                </div>
+              </Accordion.Body>
+            </Accordion.Item>
+          ))}
+        </Accordion>
+      ) : null}
     </section>
   )
 }

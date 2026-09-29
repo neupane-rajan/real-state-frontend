@@ -1,112 +1,205 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Col, Form, Row, Table } from 'react-bootstrap'
+import { useState } from 'react'
+import { Alert, Button, Col, Form, Row } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
+import { getApiErrorMessage } from '../../api/axiosInstance'
 import {
   createTestimonial,
   deleteTestimonial,
   getTestimonialAvatar,
   getTestimonials,
+  updateTestimonial,
+  type Testimonial,
   type TestimonialFormPayload,
 } from '../../api/testimonials'
+import { ErrorState } from '../../components/common/ErrorState'
 import { Loader } from '../../components/common/Loader'
+
+const emptyForm: TestimonialFormPayload = { clientName: '', role: '', company: '', message: '', rating: '5' }
 
 export function TestimonialsManage() {
   const queryClient = useQueryClient()
-  const { data = [], isLoading } = useQuery({
-    queryKey: ['testimonials'],
-    queryFn: getTestimonials,
-  })
-  const { register, handleSubmit, reset } = useForm<TestimonialFormPayload>()
+  const [editing, setEditing] = useState<Testimonial | null>(null)
+  const [notice, setNotice] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
+  const { data: testimonials = [], isLoading, isError } = useQuery({ queryKey: ['testimonials'], queryFn: getTestimonials })
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<TestimonialFormPayload>({ defaultValues: emptyForm })
+
+  const startEdit = (testimonial: Testimonial | null) => {
+    setEditing(testimonial)
+    reset(
+      testimonial
+        ? {
+            clientName: testimonial.clientName ?? '',
+            role: testimonial.role ?? '',
+            company: testimonial.company ?? '',
+            message: testimonial.message ?? '',
+            rating: String(testimonial.rating ?? 5),
+          }
+        : emptyForm,
+    )
+    if (testimonial) window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['testimonials'] })
+
   const saveMutation = useMutation({
-    mutationFn: createTestimonial,
+    mutationFn: (payload: TestimonialFormPayload) =>
+      editing?.id ? updateTestimonial(editing.id, payload) : createTestimonial(payload),
     onSuccess: async () => {
-      reset()
-      await queryClient.invalidateQueries({ queryKey: ['testimonials'] })
+      setNotice({ type: 'success', text: editing ? 'Testimonial updated.' : 'Testimonial added. It now appears on the home page.' })
+      startEdit(null)
+      await invalidate()
     },
+    onError: (error) => setNotice({ type: 'danger', text: getApiErrorMessage(error, 'The testimonial could not be saved.') }),
   })
+
   const deleteMutation = useMutation({
-    mutationFn: deleteTestimonial,
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey: ['testimonials'] }),
+    mutationFn: (testimonial: Testimonial) => deleteTestimonial(testimonial.id as number),
+    onSuccess: async () => {
+      setNotice({ type: 'success', text: 'Testimonial deleted.' })
+      await invalidate()
+    },
+    onError: (error) => setNotice({ type: 'danger', text: getApiErrorMessage(error, 'The testimonial could not be deleted.') }),
   })
 
   return (
     <section>
-      <p className="eyebrow text-primary">Admin</p>
-      <h1 className="h2 fw-bold mb-4">Manage testimonials</h1>
-      {saveMutation.isSuccess ? <Alert variant="success">Testimonial saved.</Alert> : null}
-      {saveMutation.isError ? <Alert variant="danger">Testimonial save failed.</Alert> : null}
-      <Card className="border-0 shadow-sm mb-4">
-        <Card.Body>
-          <Form onSubmit={handleSubmit((payload) => saveMutation.mutate(payload))}>
-            <Row className="g-3">
-              <Col md={4}>
-                <Form.Label>Client name</Form.Label>
-                <Form.Control {...register('clientName', { required: true })} />
-              </Col>
-              <Col md={4}>
-                <Form.Label>Role</Form.Label>
-                <Form.Control {...register('role', { required: true })} />
-              </Col>
-              <Col md={4}>
-                <Form.Label>Company</Form.Label>
-                <Form.Control {...register('company', { required: true })} />
-              </Col>
-              <Col md={3}>
-                <Form.Label>Rating</Form.Label>
-                <Form.Control type="number" min="1" max="5" {...register('rating', { required: true })} />
-              </Col>
-              <Col md={9}>
-                <Form.Label>Avatar</Form.Label>
-                <Form.Control type="file" accept="image/*" {...register('avatar')} />
-              </Col>
-              <Col md={12}>
-                <Form.Label>Message</Form.Label>
-                <Form.Control as="textarea" rows={3} {...register('message', { required: true })} />
-              </Col>
-            </Row>
-            <Button type="submit" className="mt-3" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : 'Create testimonial'}
+      <div className="admin-page-header">
+        <div>
+          <h1 className="admin-page-title">Testimonials</h1>
+          <p className="text-muted mb-0">What real clients said about you. The latest three appear on the home page. Only add reviews clients agreed to share.</p>
+        </div>
+      </div>
+
+      {notice ? <Alert variant={notice.type} dismissible onClose={() => setNotice(null)}>{notice.text}</Alert> : null}
+
+      <div className="admin-panel">
+        <h2 className="h6 fw-bold mb-3">{editing ? `Edit: ${editing.clientName}` : 'Add a testimonial'}</h2>
+        <Form onSubmit={handleSubmit((payload) => { setNotice(null); saveMutation.mutate(payload) })} noValidate>
+          <Row className="g-3">
+            <Col md={4}>
+              <Form.Group controlId="testimonial-name">
+                <Form.Label>Client name <span className="form-required">*</span></Form.Label>
+                <Form.Control
+                  isInvalid={Boolean(errors.clientName)}
+                  {...register('clientName', {
+                    required: 'Client name is required.',
+                    minLength: { value: 2, message: 'Name is too short.' },
+                  })}
+                />
+                <Form.Control.Feedback type="invalid">{errors.clientName?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group controlId="testimonial-role">
+                <Form.Label>Role <span className="form-optional">(optional)</span></Form.Label>
+                <Form.Control placeholder="e.g. Land buyer, Dhangadhi" {...register('role', { maxLength: 100 })} />
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group controlId="testimonial-company">
+                <Form.Label>Company <span className="form-optional">(optional)</span></Form.Label>
+                <Form.Control {...register('company', { maxLength: 100 })} />
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group controlId="testimonial-rating">
+                <Form.Label>Rating <span className="form-required">*</span></Form.Label>
+                <Form.Select {...register('rating', { required: true })}>
+                  {[5, 4, 3, 2, 1].map((value) => (
+                    <option key={value} value={value}>{'★'.repeat(value)} ({value})</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={8}>
+              <Form.Group controlId="testimonial-avatar">
+                <Form.Label>
+                  Photo <span className="form-optional">{editing ? '(optional — leave empty to keep the current one)' : '(optional)'}</span>
+                </Form.Label>
+                <Form.Control
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  isInvalid={Boolean(errors.avatar)}
+                  {...register('avatar', {
+                    validate: (files) => !files?.[0] || files[0].size <= 10 * 1024 * 1024 || 'The photo must be 10 MB or smaller.',
+                  })}
+                />
+                <Form.Control.Feedback type="invalid">{errors.avatar?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <Form.Group controlId="testimonial-message">
+                <Form.Label>What they said <span className="form-required">*</span></Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  isInvalid={Boolean(errors.message)}
+                  {...register('message', {
+                    required: 'Enter the testimonial text.',
+                    minLength: { value: 5, message: 'The testimonial is too short.' },
+                    maxLength: { value: 2000, message: 'Keep it under 2000 characters.' },
+                  })}
+                />
+                <Form.Control.Feedback type="invalid">{errors.message?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+          <div className="mt-3 d-flex gap-2">
+            <Button type="submit" disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? 'Saving…' : editing ? 'Save changes' : 'Add testimonial'}
             </Button>
-          </Form>
-        </Card.Body>
-      </Card>
+            {editing ? <Button variant="outline-secondary" onClick={() => startEdit(null)}>Cancel</Button> : null}
+          </div>
+        </Form>
+      </div>
+
       {isLoading ? <Loader /> : null}
-      <Table responsive hover className="admin-table bg-white">
-        <thead>
-          <tr>
-            <th>Client</th>
-            <th>Message</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((testimonial) => {
-            const testimonialId = testimonial._id ?? testimonial.id
+      {isError ? <ErrorState title="Could not load testimonials" /> : null}
+      {!isLoading && !isError && testimonials.length === 0 ? (
+        <div className="admin-panel"><p className="admin-panel__empty">No testimonials yet. The home page hides this section until you add one.</p></div>
+      ) : null}
+
+      {testimonials.length > 0 ? (
+        <ul className="admin-card-list">
+          {testimonials.map((testimonial) => {
             const avatar = getTestimonialAvatar(testimonial)
             return (
-              <tr key={String(testimonialId ?? testimonial.clientName)}>
-                <td>
-                  <div className="d-flex align-items-center gap-2">
-                    {avatar ? <img className="admin-avatar" src={avatar} alt="" /> : null}
-                    <span>{testimonial.clientName}</span>
+              <li key={String(testimonial.id)}>
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  {avatar ? <img className="admin-avatar" src={avatar} alt="" /> : <span className="admin-avatar admin-avatar--empty">{testimonial.clientName?.charAt(0)}</span>}
+                  <div>
+                    <strong>{testimonial.clientName}</strong>
+                    <span className="d-block small text-muted">
+                      {[testimonial.role, testimonial.company].filter(Boolean).join(' · ')}{' '}
+                      <span aria-label={`${testimonial.rating} out of 5`}>{'★'.repeat(Number(testimonial.rating) || 0)}</span>
+                    </span>
                   </div>
-                </td>
-                <td>{testimonial.message}</td>
-                <td className="text-end">
+                </div>
+                <p className="admin-card-list__text">{testimonial.message}</p>
+                <div className="admin-row-actions">
+                  <Button size="sm" variant="outline-primary" onClick={() => startEdit(testimonial)}>Edit</Button>
                   <Button
                     size="sm"
                     variant="outline-danger"
-                    disabled={!testimonialId || deleteMutation.isPending}
-                    onClick={() => testimonialId && deleteMutation.mutate(testimonialId)}
+                    disabled={deleteMutation.isPending}
+                    onClick={() => {
+                      if (confirm(`Delete the testimonial from ${testimonial.clientName}?`)) deleteMutation.mutate(testimonial)
+                    }}
                   >
                     Delete
                   </Button>
-                </td>
-              </tr>
+                </div>
+              </li>
             )
           })}
-        </tbody>
-      </Table>
+        </ul>
+      ) : null}
     </section>
   )
 }

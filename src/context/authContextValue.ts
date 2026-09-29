@@ -1,21 +1,13 @@
 import { createContext } from 'react'
-import type {
-  AdminLoginPayload,
-  AuthUser,
-  LoginPayload,
-  SignupPayload,
-} from '../api/auth'
+import type { AdminLoginPayload, AdminUser } from '../api/auth'
 
 export type AuthContextValue = {
-  token: string | null
-  user: AuthUser | null
-  isAuthenticated: boolean
+  admin: AdminUser | null
   isAdmin: boolean
-  isLoading: boolean
-  login: (payload: LoginPayload) => Promise<AuthUser>
-  adminLogin: (payload: AdminLoginPayload) => Promise<AuthUser>
-  signup: (payload: SignupPayload) => Promise<AuthUser>
-  logout: () => Promise<void>
+  // True while a stored token is being verified with the server on page load.
+  isCheckingSession: boolean
+  adminLogin: (payload: AdminLoginPayload) => Promise<AdminUser>
+  logout: () => void
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)

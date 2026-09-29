@@ -1,11 +1,82 @@
-$primary: #c40016; // Brand Logo Red
-$secondary: #1e3a8a; // Elegant Deep Navy for supporting elements
-$body-bg: #f8fafc; // Clean slate-50 background
-$body-color: #334155; // Slate-700 text for readability
-$border-radius: 1.25rem;
+// ---------------------------------------------------------------
+// Design tokens. Bootstrap variables are overridden here before
+// Bootstrap is imported, so components inherit one consistent system.
+//
+// Brand colours are sampled from public/logo.png:
+//   red   #c00010 (logo roof/text)   dark red #8a000e (logo shading)
+//   grey  #484848–#686868 (logo house) → charcoal below
+// ---------------------------------------------------------------
+
+// Brand
+$primary: #c40016;
+$primary-dark: #8a000e;
+$ink: #2b2b2b; // Logo charcoal: headings, top strip, footer
+$ink-soft: #3d3d3d;
+$secondary: $ink;
+$whatsapp: #128c4b; // Darker WhatsApp green: white text meets WCAG AA contrast
+
+// Warm neutrals
+$body-bg: #faf8f5;
+$surface: #ffffff;
+$surface-soft: #f3efe8;
+$body-color: #3b3936;
+$muted: #6e6a64;
+$border-soft: #e8e3db;
+$border-strong: #d4cdc2;
+$on-dark-muted: #bdb7ae; // secondary text on charcoal
+
+$text-muted: $muted;
+$border-color: $border-soft;
+
+// Typography
+// Poppins (headings) and Mukta (body) both include Devanagari and Latin.
 $font-family-base:
   "Mukta",
   system-ui,
   -apple-system,
+  "Segoe UI",
   sans-serif;
-$box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
+// Resolved per language in main.scss: Poppins for English, Mukta for Nepali
+// (Poppins draws Devanagari digits in Latin style, e.g. १० shows as 10).
+$headings-font-family: var(--font-heading);
+$font-size-base: 1.0625rem; // Mukta runs small; 17px reads like 16px
+$line-height-base: 1.65;
+$headings-font-weight: 600;
+$headings-line-height: 1.3; // Room for Devanagari matras
+$headings-color: $ink;
+$h1-font-size: 2.5rem;
+$h2-font-size: 1.875rem;
+$h3-font-size: 1.375rem;
+$h4-font-size: 1.125rem;
+$h5-font-size: 1rem;
+$h6-font-size: 0.9375rem;
+
+// Shape — one radius scale used everywhere
+$border-radius-sm: 0.375rem;
+$border-radius: 0.5rem;
+$border-radius-lg: 0.75rem;
+$border-radius-xl: 1rem;
+$border-radius-pill: 999px;
+
+// Elevation — subtle, used sparingly
+$shadow-sm: 0 1px 2px rgb(43 43 43 / 6%), 0 1px 3px rgb(43 43 43 / 6%);
+$shadow-md: 0 6px 20px rgb(43 43 43 / 9%);
+$shadow-lg: 0 14px 36px rgb(43 43 43 / 14%);
+$box-shadow: $shadow-md;
+$box-shadow-sm: $shadow-sm;
+
+// Spacing rhythm for page sections
+$section-space: clamp(3rem, 6vw, 5rem);
+$section-space-tight: clamp(2rem, 4vw, 3rem);
+
+// Forms & buttons
+$input-border-color: $border-strong;
+$input-focus-border-color: $ink;
+$input-btn-padding-y: 0.55rem;
+$input-btn-padding-x: 1.125rem;
+$btn-font-weight: 600;
+$focus-ring-color: rgb(196 0 22 / 25%);
+$link-color: $primary;
+$link-hover-color: $primary-dark;
+$accordion-button-active-bg: $surface-soft;
+$accordion-button-active-color: $ink;

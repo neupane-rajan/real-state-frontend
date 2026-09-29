@@ -1,11 +1,4 @@
 import axiosInstance from './axiosInstance'
-import {
-  mockCreateFaq,
-  mockDeleteFaq,
-  mockGetFaqs,
-  mockUpdateFaq,
-  USE_MOCK_API,
-} from '../mocks/mockApi'
 
 type ApiResponse = {
   success?: boolean
@@ -52,9 +45,6 @@ const normalizeFaqs = (response: ApiResponse): Faq[] => {
 }
 
 export const getFaqs = async () => {
-  if (USE_MOCK_API) {
-    return mockGetFaqs()
-  }
 
   const response = await axiosInstance.get<ApiResponse>('/faqs')
 
@@ -62,9 +52,6 @@ export const getFaqs = async () => {
 }
 
 export const createFaq = async (payload: FaqFormPayload) => {
-  if (USE_MOCK_API) {
-    return mockCreateFaq(payload)
-  }
 
   const response = await axiosInstance.post<ApiResponse>('/faqs', payload)
 
@@ -76,9 +63,6 @@ export const createFaq = async (payload: FaqFormPayload) => {
 }
 
 export const updateFaq = async (faqId: string | number, payload: FaqFormPayload) => {
-  if (USE_MOCK_API) {
-    return mockUpdateFaq(faqId, payload)
-  }
 
   const response = await axiosInstance.put<ApiResponse>(`/faqs/${faqId}`, payload)
 
@@ -90,9 +74,6 @@ export const updateFaq = async (faqId: string | number, payload: FaqFormPayload)
 }
 
 export const deleteFaq = async (faqId: string | number) => {
-  if (USE_MOCK_API) {
-    return mockDeleteFaq(faqId)
-  }
 
   const response = await axiosInstance.delete<ApiResponse>(`/faqs/${faqId}`)
 
