@@ -9,8 +9,9 @@ type BlogCardProps = {
 }
 
 // Plain-text preview of the article, cut at a word boundary.
+// Uses the opening paragraph so sub-headings further down don't run into the text.
 const excerpt = (content = '', length = 160) => {
-  const text = content.replace(/\s+/g, ' ').trim()
+  const text = (content.trim().split(/\n\s*\n/)[0] ?? '').replace(/\s+/g, ' ').trim()
   return text.length > length ? `${text.slice(0, length).replace(/\s+\S*$/, '')}…` : text
 }
 
@@ -21,7 +22,7 @@ export function BlogCard({ blog, variant = 'grid' }: BlogCardProps) {
   const date = blog.createdAt
     ? new Date(blog.createdAt).toLocaleDateString(isNp ? 'ne-NP' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     : ''
-  const minutes = Math.max(1, Math.round((blog.content ?? '').split(/\s+/).length / 200))
+  const minutes = Math.max(1, Math.ceil((blog.content ?? '').split(/\s+/).length / 200))
 
   return (
     <article className={`blog-card blog-card--${variant}`}>

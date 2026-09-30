@@ -198,10 +198,18 @@
     white-space: pre-line;
   }
 
-  p:first-child {
+  > p:first-child {
     color: $ink;
     font-size: 1.1875rem;
   }
+}
+
+.blog-reader__heading {
+  margin: 1.75rem 0 0.375rem;
+  color: $ink;
+  font-size: 1.1875rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 @include media-breakpoint-down(md) {

@@ -57,7 +57,7 @@ export function BlogDetail() {
   const date = blog.createdAt
     ? new Date(blog.createdAt).toLocaleDateString(isNp ? 'ne-NP' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : ''
-  const minutes = Math.max(1, Math.round((blog.content ?? '').split(/\s+/).length / 200))
+  const minutes = Math.max(1, Math.ceil((blog.content ?? '').split(/\s+/).length / 200))
   const paragraphs = (blog.content ?? '').split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean)
   const recent = allBlogs.filter((item) => item.slug !== blog.slug).slice(0, 3)
 
@@ -78,8 +78,20 @@ export function BlogDetail() {
                   <img className="blog-reader__cover" src={optimizedImageUrl(blog.coverImage, 1400)} alt="" />
                 ) : null}
                 <div className="blog-reader__content">
-                  {/* Blank lines separate paragraphs; single line breaks stay inside a paragraph */}
-                  {paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+                  {/* Blank lines separate paragraphs; single line breaks stay inside a paragraph.
+                      A short first line that doesn't end a sentence is shown as a sub-heading. */}
+                  {paragraphs.map((paragraph, index) => {
+                    const [first, ...rest] = paragraph.split('\n')
+                    if (rest.length > 0 && first.length <= 80 && !/[.,;]$/.test(first.trim())) {
+                      return (
+                        <section key={index}>
+                          <h2 className="blog-reader__heading">{first.trim()}</h2>
+                          <p>{rest.join('\n').trim()}</p>
+                        </section>
+                      )
+                    }
+                    return <p key={index}>{paragraph}</p>
+                  })}
                 </div>
               </div>
               <Link to="/blogs" className="home-section-header__link">
