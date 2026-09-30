@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Accordion, Col, Container, Row, Card } from 'react-bootstrap'
+import { Accordion, Col, Container, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { getBanners } from '../../api/banners'
 import { getFaqs } from '../../api/faqs'
@@ -10,14 +10,15 @@ import { getBlogs } from '../../api/blogs'
 import { EmptyState } from '../../components/common/EmptyState'
 import { ErrorState } from '../../components/common/ErrorState'
 import { Loader } from '../../components/common/Loader'
-import { CheckIcon } from '../../components/common/Icons'
+import { BlogCard } from '../../components/blog/BlogCard'
+import { CheckIcon, StarIcon } from '../../components/common/Icons'
+import { BrowseByType } from '../../components/home/BrowseByType'
 import { HomeHero } from '../../components/home/HomeHero'
 import { HomeOffices } from '../../components/home/HomeOffices'
 import { PropertyCard } from '../../components/property/PropertyCard'
 import { companyInfo } from '../../constants/companyInfo'
 import { useLanguage } from '../../hooks/useLanguage'
 import { usePageMeta } from '../../hooks/usePageMeta'
-import { optimizedImageUrl } from '../../utils/images'
 
 // Plain section heading: title, one line of context, and an optional text link.
 function SectionHeader({ title, intro, link }: { title: string; intro?: string; link?: ReactNode }) {
@@ -65,16 +66,6 @@ export function Home() {
   const faqs = (faqsQuery.data ?? []).slice(0, 3)
   const latestBlogs = (blogsQuery.data ?? []).slice(0, 3)
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return ''
-    const date = new Date(dateStr)
-    return date.toLocaleDateString(isNp ? 'ne-NP' : 'en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
-
   const services = [t('service1'), t('service2'), t('service3'), t('service4')]
   const viewAllLink = (to: string) => (
     <Link to={to} className="home-section-header__link">
@@ -85,6 +76,8 @@ export function Home() {
   return (
     <div className="home-page">
       <HomeHero banners={banners} latestProperty={featuredProperties[0]} />
+
+      <BrowseByType />
 
       <section className="section-block">
         <Container>
@@ -149,42 +142,9 @@ export function Home() {
           {blogsQuery.isLoading ? <Loader label={isNp ? 'लेखहरू लोड हुँदैछ…' : 'Loading articles…'} /> : null}
           {blogsQuery.isError ? <ErrorState title={isNp ? 'लेखहरू लोड गर्न सकिएन' : 'Could not load blog posts'} /> : null}
           {!blogsQuery.isError && latestBlogs.length > 0 ? (
-            <Row xs={1} md={2} lg={3} className="g-4">
-              {latestBlogs.map((blog) => (
-                <Col key={String(blog.id)}>
-                  <Card className="h-100 border-0 shadow-sm blog-card-premium overflow-hidden">
-                    <div className="blog-card-img-wrapper position-relative">
-                      {blog.coverImage ? (
-                        <img
-                          src={optimizedImageUrl(blog.coverImage, 640)}
-                          alt=""
-                          className="w-100 object-fit-cover"
-                          style={{ height: '200px' }}
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="blog-card-img-placeholder" aria-hidden="true" />
-                      )}
-                    </div>
-                    <Card.Body className="p-4 d-flex flex-column">
-                      <div className="blog-card-meta d-flex justify-content-between text-muted mb-2" style={{ fontSize: '0.85rem' }}>
-                        <span>{blog.author || 'Admin'}</span>
-                        <span>{formatDate(blog.createdAt)}</span>
-                      </div>
-                      <Card.Title as="h3" className="h5 fw-bold mb-3 text-dark line-clamp-2">
-                        {blog.title}
-                      </Card.Title>
-                      <Card.Text className="text-muted line-clamp-3 mb-4" style={{ fontSize: '0.92rem', lineHeight: '1.6' }}>
-                        {blog.content}
-                      </Card.Text>
-                      <Link to={`/blogs/${blog.slug}`} className="mt-auto home-section-header__link">
-                        {isNp ? 'पूरा पढ्नुहोस्' : 'Read article'} <span aria-hidden="true">→</span>
-                      </Link>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
+            <div className="blog-grid">
+              {latestBlogs.map((blog) => <BlogCard key={String(blog.id)} blog={blog} />)}
+            </div>
           ) : null}
         </Container>
       </section>
@@ -197,14 +157,19 @@ export function Home() {
           {testimonialsQuery.isLoading ? <Loader label={isNp ? 'लोड हुँदैछ…' : 'Loading…'} /> : null}
           {testimonialsQuery.isError ? <ErrorState title={isNp ? 'लोड गर्न सकिएन' : 'Could not load testimonials'} /> : null}
           {!testimonialsQuery.isError && testimonials.length > 0 ? (
-            <Row xs={1} md={3} className="g-4">
+            <Row xs={1} md={2} lg={3} className="g-4">
               {testimonials.map((testimonial) => {
                 const avatar = getTestimonialAvatar(testimonial)
 
                 return (
                   <Col key={String(testimonial.id ?? testimonial.clientName)}>
                     <figure className="testimonial-card">
-                      <blockquote className="mb-3">{testimonial.message}</blockquote>
+                      <div className="testimonial-card__stars" aria-label={`${testimonial.rating ?? 5} / 5`}>
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <StarIcon key={i} className={i < Number(testimonial.rating ?? 5) ? 'is-on' : ''} />
+                        ))}
+                      </div>
+                      <blockquote className="mb-3">“{testimonial.message}”</blockquote>
                       <figcaption className="testimonial-card__person mb-0">
                         {avatar ? (
                           <img src={avatar} alt="" />

@@ -12,7 +12,13 @@ import { optimizedImageUrl, optimizedSrcSet } from '../../utils/images'
 import { MapPinIcon } from '../common/Icons'
 import { PropertyFactsInline } from './PropertyFacts'
 
-export function PropertyCard({ property }: { property: Property }) {
+type PropertyCardProps = {
+  property: Property
+  // "row" = horizontal card for the list view of the properties page
+  layout?: 'grid' | 'row'
+}
+
+export function PropertyCard({ property, layout = 'grid' }: PropertyCardProps) {
   const { language } = useLanguage()
   const isNp = language === 'np'
   const coverImage = getPropertyImageUrls(property)[0]
@@ -26,13 +32,13 @@ export function PropertyCard({ property }: { property: Property }) {
   const isSold = property.status?.name === 'Sold'
 
   return (
-    <article className="property-card">
+    <article className={`property-card ${layout === 'row' ? 'property-card--row' : ''}`}>
       <div className="property-card__media">
         {coverImage ? (
           <img
             src={optimizedImageUrl(coverImage, 640)}
             srcSet={optimizedSrcSet(coverImage, [400, 640, 960])}
-            sizes="(min-width: 992px) 33vw, (min-width: 768px) 50vw, 100vw"
+            sizes={layout === 'row' ? '(min-width: 768px) 320px, 100vw' : '(min-width: 992px) 33vw, (min-width: 768px) 50vw, 100vw'}
             alt=""
             className="property-card__image"
             loading="lazy"
@@ -68,6 +74,10 @@ export function PropertyCard({ property }: { property: Property }) {
             <MapPinIcon size={15} />
             <span>{property.address}</span>
           </p>
+        ) : null}
+
+        {layout === 'row' && property.description ? (
+          <p className="property-card__excerpt">{property.description.replace(/\s+/g, ' ')}</p>
         ) : null}
 
         <PropertyFactsInline property={property} />

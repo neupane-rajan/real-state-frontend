@@ -138,3 +138,40 @@ export function HomeIcon({ size = 16, className }: IconProps) {
     </svg>
   )
 }
+
+export function BuildingIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true" focusable="false">
+      <rect x="5" y="3" width="14" height="18" rx="1" />
+      <path strokeLinecap="round" d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2M10 21v-3h4v3" />
+    </svg>
+  )
+}
+
+export function ShopIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true" focusable="false">
+      <path strokeLinejoin="round" d="M4 9l1.5-5h13L20 9M4 9h16M4 9v11h16V9" />
+      <path strokeLinejoin="round" d="M9 20v-6h6v6" />
+    </svg>
+  )
+}
+
+export function GridIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true" focusable="false">
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1" />
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1" />
+      <rect x="13.5" y="13.5" width="7" height="7" rx="1" />
+    </svg>
+  )
+}
+
+export function StarIcon({ size = 14, className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="currentColor" viewBox="0 0 24 24" className={className} aria-hidden="true" focusable="false">
+      <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" />
+    </svg>
+  )
+}

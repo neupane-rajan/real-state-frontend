@@ -1,36 +1,41 @@
 import { useQuery } from '@tanstack/react-query'
-import { Container, Row, Col } from 'react-bootstrap'
-import { useParams, Link } from 'react-router-dom'
-import { getBlogBySlug } from '../../api/blogs'
-import { Loader } from '../../components/common/Loader'
+import { Col, Container, Row } from 'react-bootstrap'
+import { Link, useParams } from 'react-router-dom'
+import { getBlogBySlug, getBlogs } from '../../api/blogs'
+import { BlogCard } from '../../components/blog/BlogCard'
 import { ErrorState } from '../../components/common/ErrorState'
+import { Loader } from '../../components/common/Loader'
+import { PageHeader } from '../../components/common/PageHeader'
+import { PhoneIcon, WhatsAppIcon } from '../../components/common/Icons'
+import { companyInfo } from '../../constants/companyInfo'
 import { useLanguage } from '../../hooks/useLanguage'
+import { usePageMeta } from '../../hooks/usePageMeta'
+import { getPhoneHref, getWhatsAppUrl } from '../../utils/contact'
+import { optimizedImageUrl } from '../../utils/images'
 
 export function BlogDetail() {
   const { slug } = useParams<{ slug: string }>()
   const { language } = useLanguage()
   const isNp = language === 'np'
 
-  const { data: blog, isLoading, isError, error } = useQuery({
+  const { data: blog, isLoading, isError } = useQuery({
     queryKey: ['blog', slug],
     queryFn: () => getBlogBySlug(slug ?? ''),
     enabled: Boolean(slug),
   })
+  // Same cached list the blog page uses.
+  const { data: allBlogs = [] } = useQuery({ queryKey: ['blogs'], queryFn: getBlogs })
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return ''
-    const date = new Date(dateStr)
-    return date.toLocaleDateString(isNp ? 'ne-NP' : 'en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
+  usePageMeta({
+    title: blog?.title ?? (isNp ? 'लेख' : 'Article'),
+    description: blog?.content?.slice(0, 160),
+    image: blog?.coverImage ? optimizedImageUrl(blog.coverImage, 1200) : undefined,
+  })
 
   if (isLoading) {
     return (
-      <Container className="py-5 text-center">
-        <Loader label={isNp ? 'लेख लोड हुँदैछ...' : 'Loading article...'} />
+      <Container className="py-5">
+        <Loader label={isNp ? 'लेख लोड हुँदैछ…' : 'Loading article…'} />
       </Container>
     )
   }
@@ -40,89 +45,86 @@ export function BlogDetail() {
       <Container className="py-5">
         <ErrorState
           title={isNp ? 'लेख फेला परेन' : 'Article not found'}
-          message={error instanceof Error ? error.message : undefined}
+          message={isNp ? 'यो लेख हटाइएको हुन सक्छ।' : 'This article may have been removed.'}
         />
         <div className="text-center mt-4">
-          <Link to="/blogs" className="btn btn-primary">
-            {isNp ? 'ब्लगहरूमा फर्कनुहोस्' : 'Back to Blogs'}
-          </Link>
+          <Link to="/blogs" className="btn btn-primary">{isNp ? 'सबै लेखहरू' : 'All articles'}</Link>
         </div>
       </Container>
     )
   }
 
-  const translated = blog
+  const date = blog.createdAt
+    ? new Date(blog.createdAt).toLocaleDateString(isNp ? 'ne-NP' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    : ''
+  const minutes = Math.max(1, Math.round((blog.content ?? '').split(/\s+/).length / 200))
+  const paragraphs = (blog.content ?? '').split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean)
+  const recent = allBlogs.filter((item) => item.slug !== blog.slug).slice(0, 3)
 
   return (
     <article className="blog-reader-page">
-      <section className="page-hero">
+      <PageHeader
+        title={blog.title ?? ''}
+        subtitle={[blog.author, date, isNp ? `${minutes} मिनेट पढाइ` : `${minutes} min read`].filter(Boolean).join(' · ')}
+        crumbs={[{ label: isNp ? 'ब्लग' : 'Blog', to: '/blogs' }, { label: blog.title ?? '' }]}
+      />
+
+      <section className="section-block section-block--tight">
         <Container>
-          <Row className="justify-content-center">
+          <Row className="g-4 g-lg-5">
             <Col lg={8}>
-              <Link to="/blogs" className="home-section-header__link d-inline-block mb-3">
+              <div className="pd-card blog-reader">
+                {blog.coverImage ? (
+                  <img className="blog-reader__cover" src={optimizedImageUrl(blog.coverImage, 1400)} alt="" />
+                ) : null}
+                <div className="blog-reader__content">
+                  {/* Blank lines separate paragraphs; single line breaks stay inside a paragraph */}
+                  {paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+                </div>
+              </div>
+              <Link to="/blogs" className="home-section-header__link">
                 <span aria-hidden="true">←</span> {isNp ? 'सबै लेखहरू' : 'All articles'}
               </Link>
-              <h1 className="page-hero__title">{translated.title}</h1>
-              <p className="page-hero__subtitle">
-                {blog.author ? <>{blog.author} · </> : null}
-                {formatDate(blog.createdAt)}
-              </p>
+            </Col>
+
+            <Col lg={4}>
+              <aside className="pd-sidebar">
+                <section className="pd-card blog-cta" aria-labelledby="blog-cta-heading">
+                  <h2 id="blog-cta-heading" className="pd-card__title mb-2">
+                    {isNp ? 'सम्पत्ति खोज्दै हुनुहुन्छ?' : 'Looking for property?'}
+                  </h2>
+                  <p className="text-muted">
+                    {isNp ? 'हाम्रो टोलीसँग सिधै कुरा गर्नुहोस्।' : 'Talk to our team directly about land, houses or plots.'}
+                  </p>
+                  <div className="pd-agent__actions">
+                    <a href={getPhoneHref()} className="btn btn-outline-primary">
+                      <PhoneIcon />
+                      <span>{isNp ? 'फोन' : 'Call'}</span>
+                    </a>
+                    <a href={getWhatsAppUrl()} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+                      <WhatsAppIcon />
+                      <span>WhatsApp</span>
+                    </a>
+                  </div>
+                  <Link to="/properties" className="btn btn-primary w-100 mt-2">
+                    {isNp ? 'सम्पत्ति हेर्नुहोस्' : 'Browse properties'}
+                  </Link>
+                  <p className="pd-agent__phone">{companyInfo.phones.join(' · ')}</p>
+                </section>
+
+                {recent.length > 0 ? (
+                  <section className="pd-card" aria-labelledby="blog-recent-heading">
+                    <h2 id="blog-recent-heading" className="pd-card__title">{isNp ? 'अन्य लेखहरू' : 'More articles'}</h2>
+                    <div className="blog-recent">
+                      {recent.map((item) => <BlogCard key={String(item.id)} blog={item} variant="compact" />)}
+                    </div>
+                  </section>
+                ) : null}
+              </aside>
             </Col>
           </Row>
         </Container>
       </section>
-
-      {/* Article Content Area */}
-      <Container className="py-5">
-        <Row className="justify-content-center">
-          <Col lg={8}>
-            {/* Big cover image */}
-            {blog.coverImage ? (
-              <div className="blog-reader-cover-wrapper mb-5 rounded-4 overflow-hidden shadow-lg">
-                <img
-                  src={blog.coverImage}
-                  alt={translated.title}
-                  className="w-100 object-fit-cover"
-                  style={{ maxHeight: '480px' }}
-                />
-              </div>
-            ) : null}
-
-            {/* Content text */}
-            <div className="blog-reader-content" style={{ fontSize: '1.18rem', lineHeight: '1.95' }}>
-              {/* Blank lines separate paragraphs; single line breaks stay inside a paragraph */}
-              {(translated.content ?? '')
-                .split(/\n\s*\n/)
-                .map((paragraph: string) => paragraph.trim())
-                .filter(Boolean)
-                .map((paragraph: string, index: number) => (
-                  <p key={index} className="mb-4" style={{ whiteSpace: 'pre-line' }}>
-                    {paragraph}
-                  </p>
-                ))}
-            </div>
-
-            <hr className="my-5" />
-
-            {/* Author Footer Card */}
-            <div className="p-4 bg-light rounded-4 d-flex align-items-center gap-3 mb-5 border-0">
-              <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '50px', height: '50px', fontSize: '1.2rem' }}>
-                {blog.author?.charAt(0) || 'A'}
-              </div>
-              <div>
-                <h4 className="h6 fw-bold mb-1 text-dark">
-                  {blog.author || 'Admin'}
-                </h4>
-                <p className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}>
-                  {isNp 
-                    ? 'भूमिराज रियल इस्टेटको आधिकारिक लेखक।' 
-                    : 'Official contributor at Bhumiraj Real Estate.'}
-                </p>
-              </div>
-            </div>
-          </Col>
-        </Row>
-      </Container>
     </article>
   )
 }

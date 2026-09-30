@@ -2,8 +2,9 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Col, Container, Form, Row } from 'react-bootstrap'
 import { useSearchParams } from 'react-router-dom'
-import { getProperties, getPropertyMeta, hasPrice, type Property } from '../../api/properties'
+import { getLowestAvailablePlotPrice, getProperties, getPropertyMeta, type Property } from '../../api/properties'
 import { EmptyState } from '../../components/common/EmptyState'
+import { PageHeader } from '../../components/common/PageHeader'
 import { ErrorState } from '../../components/common/ErrorState'
 import { Loader } from '../../components/common/Loader'
 import { PropertyCard } from '../../components/property/PropertyCard'
@@ -13,12 +14,29 @@ import { translateCategory, translateStatus } from '../../utils/translateHelpers
 
 type SortOption = 'newest' | 'price-asc' | 'price-desc'
 
+const LAKH = 100000
+
+// Budget ranges in NPR; "ask" = listings without a price.
+const BUDGETS: Record<string, { min: number; max: number } | 'ask'> = {
+  u50: { min: 0, max: 50 * LAKH },
+  '50-100': { min: 50 * LAKH, max: 100 * LAKH },
+  '100-200': { min: 100 * LAKH, max: 200 * LAKH },
+  '200+': { min: 200 * LAKH, max: Infinity },
+  ask: 'ask',
+}
+
+// The price used for filtering/sorting: own price, or the cheapest available plot for plot projects.
+const effectivePrice = (property: Property) =>
+  property.price && property.price > 0 ? property.price : getLowestAvailablePlotPrice(property.plots)
+
 // Properties without a price always sort after priced ones.
 const comparePrice = (a: Property, b: Property, direction: 1 | -1) => {
-  if (!hasPrice(a) && !hasPrice(b)) return 0
-  if (!hasPrice(a)) return 1
-  if (!hasPrice(b)) return -1
-  return ((a.price as number) - (b.price as number)) * direction
+  const priceA = effectivePrice(a)
+  const priceB = effectivePrice(b)
+  if (priceA === null && priceB === null) return 0
+  if (priceA === null) return 1
+  if (priceB === null) return -1
+  return (priceA - priceB) * direction
 }
 
 export function PropertyList() {
@@ -30,6 +48,9 @@ export function PropertyList() {
   const category = searchParams.get('type') ?? ''
   const status = searchParams.get('status') ?? ''
   const sort = (searchParams.get('sort') as SortOption | null) ?? 'newest'
+  const budget = searchParams.get('budget') ?? ''
+  const minBeds = Number(searchParams.get('beds') ?? 0)
+  const view = searchParams.get('view') === 'list' ? 'list' : 'grid'
 
   usePageMeta({
     title: isNp ? 'सम्पत्ति सूची' : 'Properties for sale',
@@ -67,6 +88,12 @@ export function PropertyList() {
     const result = properties.filter((property) => {
       if (category && property.category?.name !== category) return false
       if (status && property.status?.name !== status) return false
+      if (minBeds && (property.bedrooms ?? 0) < minBeds) return false
+      const range = BUDGETS[budget]
+      if (range) {
+        const price = effectivePrice(property)
+        if (range === 'ask' ? price !== null : price === null || price < range.min || price >= range.max) return false
+      }
       if (!query) return true
       return [property.title, property.address, property.description]
         .some((field) => field?.toLowerCase().includes(query))
@@ -76,7 +103,7 @@ export function PropertyList() {
     if (sort === 'price-desc') result.sort((a, b) => comparePrice(a, b, -1))
 
     return result
-  }, [properties, search, category, status, sort])
+  }, [properties, search, category, status, sort, budget, minBeds])
 
   // Quick type filters: only types that currently have listings, with counts.
   const typeCounts = useMemo(() => {
@@ -88,35 +115,30 @@ export function PropertyList() {
     return [...counts.entries()].sort((a, b) => b[1] - a[1])
   }, [properties])
 
-  const activeFilterCount = [search, category, status, sort !== 'newest' ? sort : ''].filter(Boolean).length
+  const activeFilterCount = [search, category, status, budget, minBeds ? 'beds' : '', sort !== 'newest' ? sort : ''].filter(Boolean).length
+  const clearFilters = () => setSearchParams(view === 'list' ? { view: 'list' } : {}, { replace: true })
 
   return (
     <div className="property-listing-page">
-      <section className="page-hero">
-        <Container>
-          <p className="eyebrow">{isNp ? 'सम्पत्ति सूची' : 'Property listings'}</p>
-          <h1 className="page-hero__title">{t('featuredProperties')}</h1>
-          <p className="page-hero__subtitle">
-            {isNp
-              ? 'घर, जग्गा, फ्ल्याट र व्यावसायिक सम्पत्तिहरू खोज्नुहोस्।'
-              : 'Browse houses, land, flats, and commercial properties from a trusted local team.'}
-          </p>
-        </Container>
-      </section>
+      <PageHeader
+        title={t('featuredProperties')}
+        subtitle={isNp ? 'घर, जग्गा, फ्ल्याट र व्यावसायिक सम्पत्तिहरू खोज्नुहोस्।' : 'Browse houses, land, flats and commercial properties from a trusted local team.'}
+        crumbs={[{ label: isNp ? 'सम्पत्ति' : 'Properties' }]}
+      >
+        <Form.Group controlId="prop-search" className="page-hero__search">
+          <Form.Label className="visually-hidden">{isNp ? 'खोज्नुहोस्' : 'Search properties'}</Form.Label>
+          <Form.Control
+            type="search"
+            placeholder={isNp ? 'शीर्षक वा स्थान खोज्नुहोस्, जस्तै: धनगढी' : 'Search by title or location, e.g. Dhangadhi'}
+            value={search}
+            onChange={(event) => updateParam('q', event.target.value)}
+          />
+        </Form.Group>
+      </PageHeader>
 
       <section className="section-block section-block--tight">
         <Container>
           <form className="pf-bar" role="search" onSubmit={(event) => event.preventDefault()}>
-            <Form.Group controlId="prop-search" className="pf-bar__search">
-              <Form.Label className="visually-hidden">{isNp ? 'खोज्नुहोस्' : 'Search properties'}</Form.Label>
-              <Form.Control
-                type="search"
-                placeholder={isNp ? 'शीर्षक वा स्थान खोज्नुहोस्…' : 'Search by title or location…'}
-                value={search}
-                onChange={(event) => updateParam('q', event.target.value)}
-              />
-            </Form.Group>
-
             <Form.Group controlId="prop-category">
               <Form.Label className="visually-hidden">{isNp ? 'प्रकार' : 'Property type'}</Form.Label>
               <Form.Select value={category} onChange={(event) => updateParam('type', event.target.value)}>
@@ -137,6 +159,28 @@ export function PropertyList() {
               </Form.Select>
             </Form.Group>
 
+            <Form.Group controlId="prop-budget">
+              <Form.Label className="visually-hidden">{isNp ? 'बजेट' : 'Budget'}</Form.Label>
+              <Form.Select value={budget} onChange={(event) => updateParam('budget', event.target.value)}>
+                <option value="">{isNp ? 'जुनसुकै बजेट' : 'Any budget'}</option>
+                <option value="u50">{isNp ? '५० लाखभन्दा कम' : 'Under 50 Lakh'}</option>
+                <option value="50-100">{isNp ? '५० लाख – १ करोड' : '50 Lakh – 1 Cr'}</option>
+                <option value="100-200">{isNp ? '१ – २ करोड' : '1 – 2 Cr'}</option>
+                <option value="200+">{isNp ? '२ करोडभन्दा बढी' : 'Above 2 Cr'}</option>
+                <option value="ask">{isNp ? 'मूल्य सोध्नुपर्ने' : 'Price on request'}</option>
+              </Form.Select>
+            </Form.Group>
+
+            <Form.Group controlId="prop-beds">
+              <Form.Label className="visually-hidden">{isNp ? 'शयनकक्ष' : 'Bedrooms'}</Form.Label>
+              <Form.Select value={minBeds ? String(minBeds) : ''} onChange={(event) => updateParam('beds', event.target.value)}>
+                <option value="">{isNp ? 'शयनकक्ष: जुनसुकै' : 'Any bedrooms'}</option>
+                {[1, 2, 3, 4].map((beds) => (
+                  <option key={beds} value={beds}>{isNp ? `${beds}+ शयनकक्ष` : `${beds}+ bedrooms`}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+
             <Form.Group controlId="prop-sort">
               <Form.Label className="visually-hidden">{isNp ? 'क्रम' : 'Sort by'}</Form.Label>
               <Form.Select value={sort} onChange={(event) => updateParam('sort', event.target.value === 'newest' ? '' : event.target.value)}>
@@ -147,7 +191,7 @@ export function PropertyList() {
             </Form.Group>
 
             {activeFilterCount > 0 ? (
-              <button type="button" onClick={() => setSearchParams({}, { replace: true })} className="btn btn-link pf-bar__clear">
+              <button type="button" onClick={clearFilters} className="btn btn-link pf-bar__clear">
                 {isNp ? 'फिल्टर हटाउनुहोस्' : 'Clear filters'}
               </button>
             ) : null}
@@ -180,11 +224,21 @@ export function PropertyList() {
           <h2 className="visually-hidden">{isNp ? 'नतिजाहरू' : 'Results'}</h2>
 
           {!propertiesQuery.isLoading && !propertiesQuery.isError && properties.length > 0 ? (
-            <p className="pf-results" aria-live="polite">
-              {isNp
-                ? `${properties.length} मध्ये ${filtered.length} सम्पत्ति देखाइँदै`
-                : `Showing ${filtered.length} of ${properties.length} properties`}
-            </p>
+            <div className="pf-results">
+              <p aria-live="polite">
+                {isNp
+                  ? `${properties.length} मध्ये ${filtered.length} सम्पत्ति देखाइँदै`
+                  : `Showing ${filtered.length} of ${properties.length} properties`}
+              </p>
+              <div className="plot-view-toggle" role="group" aria-label={isNp ? 'देखाउने तरिका' : 'Layout'}>
+                <button type="button" className={view === 'grid' ? 'is-active' : ''} aria-pressed={view === 'grid'} onClick={() => updateParam('view', '')}>
+                  {isNp ? 'ग्रिड' : 'Grid'}
+                </button>
+                <button type="button" className={view === 'list' ? 'is-active' : ''} aria-pressed={view === 'list'} onClick={() => updateParam('view', 'list')}>
+                  {isNp ? 'सूची' : 'List'}
+                </button>
+              </div>
+            </div>
           ) : null}
 
           {propertiesQuery.isLoading ? <Loader label={isNp ? 'सम्पत्तिहरू लोड हुँदैछ…' : 'Loading properties…'} /> : null}
@@ -211,13 +265,19 @@ export function PropertyList() {
           ) : null}
 
           {!propertiesQuery.isLoading && !propertiesQuery.isError && filtered.length > 0 ? (
-            <Row xs={1} md={2} lg={3} className="g-4">
-              {filtered.map((property) => (
-                <Col key={property.id}>
-                  <PropertyCard property={property} />
-                </Col>
-              ))}
-            </Row>
+            view === 'list' ? (
+              <div className="pf-list">
+                {filtered.map((property) => <PropertyCard key={property.id} property={property} layout="row" />)}
+              </div>
+            ) : (
+              <Row xs={1} md={2} lg={3} className="g-4">
+                {filtered.map((property) => (
+                  <Col key={property.id}>
+                    <PropertyCard property={property} />
+                  </Col>
+                ))}
+              </Row>
+            )
           ) : null}
         </Container>
       </section>

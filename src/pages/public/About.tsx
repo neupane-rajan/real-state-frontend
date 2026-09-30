@@ -1,10 +1,44 @@
+import { useQuery } from '@tanstack/react-query'
 import { Col, Container, Row } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
-import { MapPinIcon, PhoneIcon, WhatsAppIcon } from '../../components/common/Icons'
+import { getProperties } from '../../api/properties'
+import { AreaIcon, HomeIcon, TagIcon, CheckIcon } from '../../components/common/Icons'
+import { PageHeader } from '../../components/common/PageHeader'
+import { HomeOffices } from '../../components/home/HomeOffices'
 import { companyInfo } from '../../constants/companyInfo'
 import { useLanguage } from '../../hooks/useLanguage'
 import { usePageMeta } from '../../hooks/usePageMeta'
-import { getPhoneHref, getWhatsAppUrl } from '../../utils/contact'
+
+// The company's four services (from companyinfo.txt), with a one-line explanation each.
+const services = [
+  {
+    icon: <AreaIcon size={22} />,
+    titleNp: 'जग्गा खरिद–बिक्री',
+    titleEn: 'Land buying & selling',
+    textNp: 'उपयुक्त जग्गा खोज्न वा आफ्नो जग्गाका लागि खरिदकर्ता भेट्टाउन सहयोग।',
+    textEn: 'Help finding the right land, or a buyer for yours.',
+  },
+  {
+    icon: <HomeIcon size={22} />,
+    titleNp: 'घर बिक्री',
+    titleEn: 'House sales',
+    textNp: 'घर बेच्न वा किन्न मूल्यदेखि कारोबारसम्म सहयोग।',
+    textEn: 'Support with pricing, viewings and the sale itself.',
+  },
+  {
+    icon: <TagIcon size={22} />,
+    titleNp: 'प्लटिङ',
+    titleEn: 'Plotting',
+    textNp: 'ठूलो जग्गालाई प्लटमा विभाजन गरी बिक्री।',
+    textEn: 'Dividing larger land into plots and selling them.',
+  },
+  {
+    icon: <CheckIcon size={22} />,
+    titleNp: 'लगानी परामर्श',
+    titleEn: 'Investment advice',
+    textNp: 'सुरक्षित रियल इस्टेट लगानीका लागि सल्लाह।',
+    textEn: 'Advice on safe real estate investment.',
+  },
+]
 
 // How a typical purchase works with the company. Confirm wording with the owner.
 const steps = [
@@ -34,9 +68,6 @@ const steps = [
   },
 ]
 
-const mapLink = (query: string) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
-
 export function About() {
   const { language } = useLanguage()
   const isNp = language === 'np'
@@ -47,15 +78,25 @@ export function About() {
     description: story[0],
   })
 
+  // Live count of published listings for the numbers band (shares the listing page cache).
+  const { data: properties } = useQuery({ queryKey: ['properties'], queryFn: () => getProperties() })
+
+  const numbers = [
+    { value: isNp ? '१०+' : '10+', label: isNp ? 'वर्षको अनुभव' : 'years of experience' },
+    { value: isNp ? 'हजारौं' : 'Thousands', label: isNp ? 'सन्तुष्ट ग्राहक' : 'of satisfied clients' },
+    { value: isNp ? '२' : '2', label: isNp ? 'कार्यालय कैलालीमा' : 'offices in Kailali' },
+    ...(properties && properties.length > 0
+      ? [{ value: String(properties.length), label: isNp ? 'हाल उपलब्ध सम्पत्ति' : 'listings available now' }]
+      : []),
+  ]
+
   return (
     <div className="about-page">
-      <section className="page-hero">
-        <Container>
-          <p className="eyebrow">{isNp ? 'हाम्रो बारेमा' : 'About us'}</p>
-          <h1 className="page-hero__title">{isNp ? companyInfo.nameNp : companyInfo.nameEn}</h1>
-          <p className="page-hero__subtitle">{isNp ? companyInfo.taglineNp : companyInfo.taglineEn}</p>
-        </Container>
-      </section>
+      <PageHeader
+        title={isNp ? companyInfo.nameNp : companyInfo.nameEn}
+        subtitle={isNp ? companyInfo.taglineNp : companyInfo.taglineEn}
+        crumbs={[{ label: isNp ? 'हाम्रो बारेमा' : 'About us' }]}
+      />
 
       <section className="section-block">
         <Container>
@@ -91,6 +132,34 @@ export function About() {
         </Container>
       </section>
 
+      <section className="about-numbers" aria-label={isNp ? 'मुख्य तथ्यहरू' : 'Key numbers'}>
+        <Container>
+          <dl className="about-numbers__grid">
+            {numbers.map((item) => (
+              <div key={item.label}>
+                <dt>{item.value}</dt>
+                <dd>{item.label}</dd>
+              </div>
+            ))}
+          </dl>
+        </Container>
+      </section>
+
+      <section className="section-block" aria-labelledby="about-services-title">
+        <Container>
+          <h2 id="about-services-title" className="about-heading">{isNp ? 'हाम्रा सेवाहरू' : 'What we do'}</h2>
+          <ul className="about-services">
+            {services.map((service) => (
+              <li key={service.titleEn}>
+                <span className="about-services__icon">{service.icon}</span>
+                <h3>{isNp ? service.titleNp : service.titleEn}</h3>
+                <p>{isNp ? service.textNp : service.textEn}</p>
+              </li>
+            ))}
+          </ul>
+        </Container>
+      </section>
+
       <section className="section-block about-steps-section" aria-labelledby="about-steps-title">
         <Container>
           <h2 id="about-steps-title" className="about-heading">{isNp ? 'हामी कसरी काम गर्छौं' : 'How we work'}</h2>
@@ -108,40 +177,7 @@ export function About() {
         </Container>
       </section>
 
-      <section className="section-block" aria-labelledby="about-offices-title">
-        <Container>
-          <h2 id="about-offices-title" className="about-heading">{isNp ? 'हाम्रा कार्यालयहरू' : 'Our offices'}</h2>
-          <Row className="g-4">
-            {companyInfo.offices.map((office) => (
-              <Col md={6} key={office.labelEn}>
-                <div className="about-office">
-                  <MapPinIcon size={20} className="about-office__icon" />
-                  <div>
-                    <h3>{isNp ? office.labelNp : office.labelEn}</h3>
-                    <p>{isNp ? office.placeNp : office.placeEn}</p>
-                    <a href={mapLink(office.mapQuery)} target="_blank" rel="noopener noreferrer" className="home-section-header__link">
-                      {isNp ? 'नक्सामा हेर्नुहोस्' : 'Get directions'} <span aria-hidden="true">↗</span>
-                    </a>
-                  </div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-          <div className="about-cta">
-            <a href={getPhoneHref()} className="btn btn-primary">
-              <PhoneIcon />
-              <span>{companyInfo.phones[0]}</span>
-            </a>
-            <a href={getWhatsAppUrl()} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
-              <WhatsAppIcon />
-              <span>WhatsApp</span>
-            </a>
-            <Link to="/properties" className="btn btn-outline-secondary">
-              {isNp ? 'सम्पत्ति हेर्नुहोस्' : 'Browse properties'}
-            </Link>
-          </div>
-        </Container>
-      </section>
+      <HomeOffices />
     </div>
   )
 }

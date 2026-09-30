@@ -59,3 +59,14 @@
   color: $body-color;
   font-size: 1rem;
 }
+
+.testimonial-card__stars {
+  display: flex;
+  gap: 0.125rem;
+  margin-bottom: 0.75rem;
+  color: $border-strong;
+
+  .is-on {
+    color: #d99a00;
+  }
+}

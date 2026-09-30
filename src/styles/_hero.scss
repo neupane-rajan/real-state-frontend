@@ -595,3 +595,67 @@
   stroke-width: 5px;
   stroke-linejoin: round;
 }
+
+// Browse by type --------------------------------------------------
+
+.browse-types__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.type-tile {
+  display: grid;
+  height: 100%;
+  gap: 0.25rem;
+  padding: 1.125rem 1rem;
+  border: 1px solid $border-soft;
+  border-radius: $border-radius-lg;
+  background: $surface;
+  color: $ink;
+  text-decoration: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    border-color: $primary;
+    box-shadow: $shadow-sm;
+    color: $ink;
+    transform: translateY(-2px);
+
+    .type-tile__icon {
+      background: $primary;
+      color: $white;
+    }
+  }
+
+  &.is-empty {
+    .type-tile__count {
+      color: $border-strong;
+    }
+  }
+}
+
+.type-tile__icon {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 0.5rem;
+  place-items: center;
+  border-radius: $border-radius;
+  background: rgb(196 0 22 / 8%);
+  color: $primary;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.type-tile__name {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.type-tile__count {
+  color: $muted;
+  font-size: 0.875rem;
+}
