@@ -15,15 +15,15 @@ $ink-soft: #3d3d3d;
 $secondary: $ink;
 $whatsapp: #128c4b; // Darker WhatsApp green: white text meets WCAG AA contrast
 
-// Warm neutrals
-$body-bg: #faf8f5;
+// Neutrals: light grey page with white cards, so the logo red is the only accent.
+$body-bg: #f7f8fa;
 $surface: #ffffff;
-$surface-soft: #f3efe8;
-$body-color: #3b3936;
-$muted: #6e6a64;
-$border-soft: #e8e3db;
-$border-strong: #d4cdc2;
-$on-dark-muted: #bdb7ae; // secondary text on charcoal
+$surface-soft: #eef1f5; // header bands and alternate sections
+$body-color: #3a3f47;
+$muted: #646a74; // AA contrast on $surface-soft
+$border-soft: #e3e6eb;
+$border-strong: #cdd2da;
+$on-dark-muted: #b4b9c2; // secondary text on charcoal
 
 $text-muted: $muted;
 $border-color: $border-soft;
@@ -70,6 +70,10 @@ $section-space: clamp(3rem, 6vw, 5rem);
 $section-space-tight: clamp(2rem, 4vw, 3rem);
 
 // Forms & buttons
+$input-bg: $surface;
+$card-bg: $surface;
+$modal-content-bg: $surface;
+$dropdown-bg: $surface;
 $input-border-color: $border-strong;
 $input-focus-border-color: $ink;
 $input-btn-padding-y: 0.55rem;

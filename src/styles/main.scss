@@ -489,3 +489,37 @@ p {
   padding: 0;
   list-style: none;
 }
+
+// Admin login page
+.auth-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, $ink 0%, $ink-soft 100%);
+}
+
+.auth-card {
+  max-width: 28rem;
+  border: 0;
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-lg;
+}
+
+.auth-card__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  color: $ink;
+  font-weight: 700;
+
+  img {
+    border-radius: $border-radius;
+    object-fit: contain;
+  }
+}
+
+.auth-card .card-body > p {
+  max-width: none;
+}
