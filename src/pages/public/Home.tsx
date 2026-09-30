@@ -12,7 +12,6 @@ import { ErrorState } from '../../components/common/ErrorState'
 import { Loader } from '../../components/common/Loader'
 import { BlogCard } from '../../components/blog/BlogCard'
 import { CheckIcon, StarIcon } from '../../components/common/Icons'
-import { BrowseByType } from '../../components/home/BrowseByType'
 import { HomeHero } from '../../components/home/HomeHero'
 import { HomeOffices } from '../../components/home/HomeOffices'
 import { PropertyCard } from '../../components/property/PropertyCard'
@@ -76,8 +75,6 @@ export function Home() {
   return (
     <div className="home-page">
       <HomeHero banners={banners} latestProperty={featuredProperties[0]} />
-
-      <BrowseByType />
 
       <section className="section-block">
         <Container>

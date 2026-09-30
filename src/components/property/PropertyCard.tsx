@@ -29,7 +29,9 @@ export function PropertyCard({ property, layout = 'grid' }: PropertyCardProps) {
   const price = ownPrice ?? (lowestPlotPrice ? `${isNp ? 'सुरु' : 'From'} ${lowestPlotPrice}` : null)
   const categoryName = translateCategory(property.category?.name, language)
   const statusName = translateStatus(property.status?.name, language)
-  const isSold = property.status?.name === 'Sold'
+  const statusClass = property.status?.name === 'Sold'
+    ? 'sold'
+    : property.status?.name === 'Under Construction' ? 'progress' : 'available'
 
   return (
     <article className={`property-card ${layout === 'row' ? 'property-card--row' : ''}`}>
@@ -55,9 +57,14 @@ export function PropertyCard({ property, layout = 'grid' }: PropertyCardProps) {
             <span className="badge-pill badge-pill--featured">{isNp ? 'विशेष' : 'Featured'}</span>
           ) : null}
           {statusName ? (
-            <span className={`badge-pill ${isSold ? 'badge-pill--sold' : 'badge-pill--status'}`}>{statusName}</span>
+            <span className={`badge-pill property-card__status property-card__status--${statusClass}`}>{statusName}</span>
           ) : null}
         </div>
+
+        <p className={`property-card__price-tag ${price ? '' : 'property-card__price-tag--ask'}`}>
+          <span className="visually-hidden">{isNp ? 'मूल्य: ' : 'Price: '}</span>
+          {price ?? (isNp ? 'मूल्यका लागि सम्पर्क' : 'Price on call')}
+        </p>
       </div>
 
       <div className="property-card__body">
@@ -83,18 +90,12 @@ export function PropertyCard({ property, layout = 'grid' }: PropertyCardProps) {
         <PropertyFactsInline property={property} />
 
         <div className="property-card__footer">
-          {price ? (
-            <p className="property-card__price">
-              <span className="visually-hidden">{isNp ? 'मूल्य: ' : 'Price: '}</span>
-              {price}
-            </p>
-          ) : (
-            <p className="property-card__price property-card__price--muted">
-              {isNp ? 'मूल्यका लागि सम्पर्क गर्नुहोस्' : 'Contact for price'}
-            </p>
-          )}
+          <span className="property-card__agent">
+            <img src="/logo-small.webp" alt="" width={28} height={28} loading="lazy" />
+            {isNp ? 'भूमिराज रियल इस्टेट' : 'Bhumiraj Real Estate'}
+          </span>
           <span className="property-card__cta" aria-hidden="true">
-            {isNp ? 'विवरण' : 'View details'} →
+            {isNp ? 'विवरण हेर्नुहोस्' : 'View details'}
           </span>
         </div>
       </div>
