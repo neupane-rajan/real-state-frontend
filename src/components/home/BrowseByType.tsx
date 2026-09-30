@@ -1,19 +1,9 @@
-import type { ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Container } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { getProperties, getPropertyMeta } from '../../api/properties'
 import { useLanguage } from '../../hooks/useLanguage'
-import { translateCategory } from '../../utils/translateHelpers'
-import { AreaIcon, BuildingIcon, GridIcon, HomeIcon, ShopIcon } from '../common/Icons'
-
-const iconFor = (name: string, isPlotProject?: boolean): ReactNode => {
-  if (isPlotProject) return <GridIcon size={26} />
-  if (name === 'House') return <HomeIcon size={26} />
-  if (name === 'Land') return <AreaIcon size={26} />
-  if (name === 'Flats' || name === 'Apartment') return <BuildingIcon size={26} />
-  return <ShopIcon size={26} />
-}
+import { categoryEmoji, translateCategory } from '../../utils/translateHelpers'
 
 // Property-type tiles with live listing counts, linking to the filtered listings page.
 export function BrowseByType() {
@@ -50,7 +40,7 @@ export function BrowseByType() {
             return (
               <li key={category.id}>
                 <Link to={`/properties?type=${encodeURIComponent(category.name)}`} className={`type-tile ${count === 0 ? 'is-empty' : ''}`}>
-                  <span className="type-tile__icon">{iconFor(category.name, category.isPlotProject)}</span>
+                  <span className="type-tile__icon" aria-hidden="true">{categoryEmoji(category)}</span>
                   <span className="type-tile__name">{translateCategory(category.name, language)}</span>
                   <span className="type-tile__count">
                     {count > 0

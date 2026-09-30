@@ -77,7 +77,7 @@ export function PlotsManage() {
         <Link to="/admin/properties" className="small">← Back to properties</Link>
         <div className="admin-panel mt-3">
           <p className="admin-panel__empty">
-            “{project.title}” is not a Land Development / Plot Project. Change its property type to manage plots.
+            “{project.title}” is not a Plot Project. Change its property type to manage plots.
           </p>
         </div>
       </section>

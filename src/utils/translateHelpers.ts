@@ -6,12 +6,15 @@ import type { Language } from '../constants/translations'
 const categoryLabels: Record<string, string> = {
   House: 'घर',
   Land: 'जग्गा',
-  Flats: 'फ्ल्याट',
-  'Office Space': 'कार्यालय स्पेस',
-  'Shop Space': 'पसल स्पेस',
-  Apartment: 'अपार्टमेन्ट',
-  'Land Development / Plot Project': 'जग्गा विकास / प्लटिङ परियोजना',
   'Plot Project': 'प्लटिङ परियोजना',
+}
+
+// Emoji shown next to each property type (home tiles, admin type choice).
+export const categoryEmoji = (category: { name: string; isPlotProject?: boolean }) => {
+  if (category.isPlotProject) return '📐'
+  if (category.name === 'Land') return '🏞️'
+  if (category.name === 'House') return '🏠'
+  return '🏷️'
 }
 
 const statusLabels: Record<string, string> = {

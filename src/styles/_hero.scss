@@ -600,8 +600,14 @@
 
 .browse-types__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
-  gap: 0.75rem;
+  // Three types: House, Land, Plot Project
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+
+  @include media-breakpoint-down(md) {
+    grid-template-columns: 1fr;
+    gap: 0.625rem;
+  }
   margin: 0;
   padding: 0;
   list-style: none;
@@ -610,8 +616,10 @@
 .type-tile {
   display: grid;
   height: 100%;
-  gap: 0.25rem;
-  padding: 1.125rem 1rem;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.125rem 1rem;
+  padding: 1.25rem;
   border: 1px solid $border-soft;
   border-radius: $border-radius-lg;
   background: $surface;
@@ -626,8 +634,7 @@
     transform: translateY(-2px);
 
     .type-tile__icon {
-      background: $primary;
-      color: $white;
+      background: rgb(196 0 22 / 14%);
     }
   }
 
@@ -640,14 +647,15 @@
 
 .type-tile__icon {
   display: grid;
-  width: 3rem;
-  height: 3rem;
-  margin-bottom: 0.5rem;
+  grid-row: span 2;
+  width: 3.5rem;
+  height: 3.5rem;
   place-items: center;
   border-radius: $border-radius;
   background: rgb(196 0 22 / 8%);
-  color: $primary;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  font-size: 1.625rem;
+  line-height: 1;
+  transition: background-color 0.15s ease;
 }
 
 .type-tile__name {

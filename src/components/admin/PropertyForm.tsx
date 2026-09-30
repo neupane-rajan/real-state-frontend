@@ -16,6 +16,7 @@ import {
   type PropertyMediaType,
   type PropertyMeta,
 } from '../../api/properties'
+import { categoryEmoji } from '../../utils/translateHelpers'
 
 const MAX_IMAGE_MB = 10
 const MAX_VIDEO_MB = 100
@@ -107,7 +108,7 @@ export function PropertyForm({ property, meta, onSaved, onCancel }: PropertyForm
   const priceInput = useWatch({ control, name: 'price' })
   const parsedPrice = parsePriceInput(priceInput ?? '')
 
-  // "Land Development / Plot Project" types get a site plan field and plot management.
+  // "Plot Project" types get a site plan field and plot management.
   const categoryId = useWatch({ control, name: 'categoryId' })
   const isPlotType = Boolean(meta.categories.find((category) => String(category.id) === categoryId)?.isPlotProject)
   // House and Land first, plot projects last.
@@ -202,7 +203,7 @@ export function PropertyForm({ property, meta, onSaved, onCancel }: PropertyForm
                       {...register('categoryId', { required: 'Choose a property type.' })}
                     />
                     <span>
-                      <strong>{item.name}</strong>
+                      <strong><span aria-hidden="true">{categoryEmoji(item)}</span> {item.name}</strong>
                       {typeHint(item) ? <small>{typeHint(item)}</small> : null}
                     </span>
                   </label>
