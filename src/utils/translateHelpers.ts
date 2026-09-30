@@ -11,6 +11,7 @@ const categoryLabels: Record<string, string> = {
   'Shop Space': 'पसल स्पेस',
   Apartment: 'अपार्टमेन्ट',
   'Land Development / Plot Project': 'जग्गा विकास / प्लटिङ परियोजना',
+  'Plot Project': 'प्लटिङ परियोजना',
 }
 
 const statusLabels: Record<string, string> = {

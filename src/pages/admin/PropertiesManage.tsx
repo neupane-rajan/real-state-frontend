@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Modal, Nav, Table } from 'react-bootstrap'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { getApiErrorMessage } from '../../api/axiosInstance'
 import {
   deleteProperty,
@@ -27,6 +27,7 @@ const views: Array<{ key: View; label: string; filter: (property: Property) => b
 
 export function PropertiesManage() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [search, setSearch] = useState('')
   const [notice, setNotice] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
@@ -241,7 +242,12 @@ export function PropertiesManage() {
               property={editing === 'new' ? null : editingProperty}
               meta={metaQuery.data}
               onCancel={closeForm}
-              onSaved={(text) => {
+              onSaved={(text, saved) => {
+                // A new plot project (or one without plots yet) goes straight to adding plots.
+                if (saved.category?.isPlotProject && (saved.plots?.length ?? 0) === 0) {
+                  navigate(`/admin/properties/${saved.id}/plots`, { state: { notice: `${text} Now add its plots.` } })
+                  return
+                }
                 setNotice({ type: 'success', text })
                 closeForm()
               }}

@@ -56,7 +56,7 @@ export function PropertyList() {
     title: isNp ? 'सम्पत्ति सूची' : 'Properties for sale',
     description: isNp
       ? 'कैलाली र सुदूरपश्चिममा घर, जग्गा, फ्ल्याट र व्यावसायिक सम्पत्तिहरू खोज्नुहोस्।'
-      : 'Browse houses, land, flats and commercial properties in Kailali and Sudurpashchim.',
+      : 'Browse houses, land and plot projects in Kailali and Sudurpashchim.',
   })
 
   const propertiesQuery = useQuery({
@@ -122,7 +122,7 @@ export function PropertyList() {
     <div className="property-listing-page">
       <PageHeader
         title={t('featuredProperties')}
-        subtitle={isNp ? 'घर, जग्गा, फ्ल्याट र व्यावसायिक सम्पत्तिहरू खोज्नुहोस्।' : 'Browse houses, land, flats and commercial properties from a trusted local team.'}
+        subtitle={isNp ? 'घर, जग्गा र प्लटिङ परियोजनाहरू खोज्नुहोस्।' : 'Browse houses, land and plot projects from a trusted local team.'}
         crumbs={[{ label: isNp ? 'सम्पत्ति' : 'Properties' }]}
       >
         <Form.Group controlId="prop-search" className="page-hero__search">

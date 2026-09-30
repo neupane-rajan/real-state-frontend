@@ -83,7 +83,7 @@ export function Home() {
         <Container>
           <SectionHeader
             title={isNp ? 'हालै थपिएका सम्पत्ति' : 'Recently listed'}
-            intro={isNp ? 'बिक्रीका लागि उपलब्ध जग्गा, घर र फ्ल्याटहरू।' : 'Land, houses and flats currently available.'}
+            intro={isNp ? 'बिक्रीका लागि उपलब्ध घर, जग्गा र प्लटहरू।' : 'Houses, land and plots currently available.'}
             link={viewAllLink('/properties')}
           />
           {propertiesQuery.isLoading ? <Loader label={isNp ? 'सम्पत्तिहरू लोड हुँदैछ…' : 'Loading properties…'} /> : null}

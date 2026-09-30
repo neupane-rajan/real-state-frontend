@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Col, Form, Row } from 'react-bootstrap'
 import { useForm, useWatch } from 'react-hook-form'
+import { Link } from 'react-router-dom'
 import { getApiErrorMessage } from '../../api/axiosInstance'
 import {
   createProperty,
@@ -72,13 +73,22 @@ const validateFiles = (maxMb: number, maxCount?: number) => (files?: FileList) =
   return tooLarge ? `${tooLarge.name} is larger than ${maxMb} MB.` : true
 }
 
+const typeRank = (name: string) => ({ House: 0, Land: 1 })[name] ?? 2
+
+const typeHint = (category: PropertyMeta['categories'][number]) => {
+  if (category.isPlotProject) return 'Land divided into plots — add each plot with its own size, price and status'
+  if (category.name === 'Land') return 'One piece of land sold as a whole'
+  if (category.name === 'House') return 'A house or building for sale'
+  return null
+}
+
 const Required = () => <span className="form-required" aria-label="required">*</span>
 const Optional = () => <span className="form-optional">(optional)</span>
 
 type PropertyFormProps = {
   property: Property | null
   meta: PropertyMeta
-  onSaved: (message: string) => void
+  onSaved: (message: string, saved: Property) => void
   onCancel: () => void
 }
 
@@ -100,6 +110,8 @@ export function PropertyForm({ property, meta, onSaved, onCancel }: PropertyForm
   // "Land Development / Plot Project" types get a site plan field and plot management.
   const categoryId = useWatch({ control, name: 'categoryId' })
   const isPlotType = Boolean(meta.categories.find((category) => String(category.id) === categoryId)?.isPlotProject)
+  // House and Land first, plot projects last.
+  const typeOptions = [...meta.categories].sort((a, b) => Number(a.isPlotProject) - Number(b.isPlotProject) || typeRank(a.name) - typeRank(b.name))
 
   const invalidateLists = () =>
     Promise.all([
@@ -120,7 +132,7 @@ export function PropertyForm({ property, meta, onSaved, onCancel }: PropertyForm
     },
     onSuccess: async (saved) => {
       await invalidateLists()
-      onSaved(isEditing ? `“${saved.title}” was updated.` : `“${saved.title}” was created.`)
+      onSaved(isEditing ? `“${saved.title}” was updated.` : `“${saved.title}” was created.`, saved)
     },
     onError: (error) => setServerError(getApiErrorMessage(error, 'The property could not be saved. Please try again.')),
   })
@@ -178,15 +190,33 @@ export function PropertyForm({ property, meta, onSaved, onCancel }: PropertyForm
               <Form.Control.Feedback type="invalid">{errors.title?.message}</Form.Control.Feedback>
             </Form.Group>
           </Col>
-          <Col md={6}>
-            <Form.Group controlId="property-category">
-              <Form.Label>Property type <Required /></Form.Label>
-              <Form.Select isInvalid={Boolean(errors.categoryId)} {...register('categoryId', { required: 'Choose a property type.' })}>
-                <option value="">Select type…</option>
-                {meta.categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">{errors.categoryId?.message}</Form.Control.Feedback>
-            </Form.Group>
+          <Col md={12}>
+            <fieldset>
+              <legend className="admin-type-legend">Property type <Required /></legend>
+              <div className="admin-type-choice">
+                {typeOptions.map((item) => (
+                  <label key={item.id} className={`admin-type-choice__option ${String(item.id) === categoryId ? 'is-selected' : ''}`}>
+                    <input
+                      type="radio"
+                      value={String(item.id)}
+                      {...register('categoryId', { required: 'Choose a property type.' })}
+                    />
+                    <span>
+                      <strong>{item.name}</strong>
+                      {typeHint(item) ? <small>{typeHint(item)}</small> : null}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {errors.categoryId ? <div className="invalid-feedback d-block">{errors.categoryId.message}</div> : null}
+              {isPlotType ? (
+                <Alert variant="info" className="mt-3 mb-0 small">
+                  {property
+                    ? <>Add, edit and mark plots on the <Link to={`/admin/properties/${property.id}/plots`}>Plots page</Link>.</>
+                    : 'After you save, you will go straight to the Plots page to add each plot (number, size, price and status).'}
+                </Alert>
+              ) : null}
+            </fieldset>
           </Col>
           <Col md={6}>
             <Form.Group controlId="property-status">

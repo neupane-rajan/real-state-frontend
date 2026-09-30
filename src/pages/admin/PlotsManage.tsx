@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Modal, Table } from 'react-bootstrap'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { getApiErrorMessage } from '../../api/axiosInstance'
 import {
   deletePlot,
@@ -24,7 +24,11 @@ export function PlotsManage() {
   const id = Number(propertyId)
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<number | 'new' | null>(null)
-  const [notice, setNotice] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
+  const location = useLocation()
+  const [notice, setNotice] = useState<{ type: 'success' | 'danger'; text: string } | null>(() => {
+    const text = (location.state as { notice?: string } | null)?.notice
+    return text ? { type: 'success', text } : null
+  })
 
   const { data: project, isLoading, isError, error } = useQuery({
     queryKey: ['admin', 'property', id],
