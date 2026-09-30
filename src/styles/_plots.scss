@@ -7,53 +7,16 @@ $plot-available: #15803d;
 $plot-reserved: #b45309;
 $plot-sold: #6b7280;
 
-.plot-project__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
 .plot-project__summary {
   margin: 0;
   color: $muted;
-}
-
-.plot-view-toggle {
-  display: inline-flex;
-  padding: 0.25rem;
-  border: 1px solid $border-soft;
-  border-radius: $border-radius-pill;
-  background: $surface;
-
-  button {
-    padding: 0.375rem 1rem;
-    border: 0;
-    border-radius: $border-radius-pill;
-    background: transparent;
-    color: $body-color;
-    font-weight: 600;
-
-    &.is-active {
-      background: $ink;
-      color: $white;
-    }
-  }
-}
-
-.plot-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
 }
 
 .plot-dot {
   display: inline-block;
   width: 0.625rem;
   height: 0.625rem;
+  flex: 0 0 auto;
   border-radius: 50%;
 }
 
@@ -75,49 +38,179 @@ $plot-sold: #6b7280;
 .plot-status--reserved { background: rgb(180 83 9 / 12%); color: $plot-reserved; }
 .plot-status--sold { background: rgb(107 114 128 / 15%); color: #4b5563; }
 
-// Site plan with clickable markers --------------------------------
+// Availability counters (also the status filter) --------------------
+
+.plot-availability {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.plot-stat {
+  display: grid;
+  gap: 0.125rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid $border-soft;
+  border-left-width: 4px;
+  border-radius: $border-radius;
+  background: $surface;
+  text-align: left;
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
+
+  strong {
+    color: $ink;
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  span {
+    color: $muted;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  &:hover {
+    box-shadow: $shadow-sm;
+  }
+
+  &.is-active {
+    background: $surface-soft;
+    box-shadow: inset 0 0 0 1px $ink;
+  }
+}
+
+.plot-stat--all { border-left-color: $ink; }
+.plot-stat--available { border-left-color: $plot-available; strong { color: $plot-available; } }
+.plot-stat--reserved { border-left-color: $plot-reserved; strong { color: $plot-reserved; } }
+.plot-stat--sold { border-left-color: $plot-sold; strong { color: #4b5563; } }
+
+// Proportion bar under the counters
+.plot-meter {
+  display: flex;
+  height: 0.5rem;
+  gap: 2px;
+  margin: 0.75rem 0 1.25rem;
+  overflow: hidden;
+  border-radius: $border-radius-pill;
+  background: $surface-soft;
+}
+
+.plot-meter__part {
+  flex-basis: 0;
+}
+
+.plot-meter__part--available { background: $plot-available; }
+.plot-meter__part--reserved { background: $plot-reserved; }
+.plot-meter__part--sold { background: $plot-sold; }
+
+// View switch + legend ---------------------------------------------------
+
+.plot-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.plot-view-toggle {
+  display: inline-flex;
+  padding: 0.25rem;
+  border: 1px solid $border-soft;
+  border-radius: $border-radius;
+  background: $surface-soft;
+
+  button {
+    padding: 0.375rem 1rem;
+    border: 0;
+    border-radius: $border-radius-sm;
+    background: transparent;
+    color: $body-color;
+    font-size: 0.9375rem;
+    font-weight: 600;
+
+    &.is-active {
+      background: $white;
+      box-shadow: $shadow-sm;
+      color: $ink;
+    }
+  }
+}
+
+.plot-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  padding: 0;
+  color: $muted;
+  font-size: 0.875rem;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+}
+
+// Site plan with clickable markers (also used by the admin plot manager) ----
 
 .plot-plan__scroller {
-  overflow-x: auto;
+  overflow: hidden;
   border: 1px solid $border-soft;
-  border-radius: $border-radius-lg;
-  background: $surface;
+  border-radius: $border-radius;
 }
 
 .plot-plan {
   position: relative;
-  min-width: 560px; // phones scroll sideways instead of shrinking markers into each other
+  overflow: hidden;
+  border: 1px solid $border-soft;
+  border-radius: $border-radius;
+  background: $surface;
 
   img {
     display: block;
     width: 100%;
     height: auto;
   }
+
+  .plot-plan__scroller & {
+    border: 0;
+    border-radius: 0;
+  }
 }
 
 .plot-marker {
   position: absolute;
-  min-width: 2rem;
-  height: 2rem;
+  display: grid;
+  min-width: clamp(1.75rem, 4vw, 2.75rem);
+  height: clamp(1.75rem, 4vw, 2.75rem);
+  place-items: center;
   padding: 0 0.375rem;
   transform: translate(-50%, -50%);
-  border: 2px solid $white;
+  border: 3px solid $white;
   border-radius: $border-radius-pill;
-  box-shadow: 0 2px 6px rgb(0 0 0 / 30%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
   color: $white;
-  font-size: 0.8125rem;
+  font-size: clamp(0.6875rem, 1.6vw, 0.875rem);
   font-weight: 700;
   line-height: 1;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
 
   &:hover,
-  &:focus-visible {
+  &:focus-visible,
+  &.is-selected {
     z-index: 2;
     transform: translate(-50%, -50%) scale(1.15);
+    box-shadow: 0 0 0 4px rgb(255 255 255 / 70%), 0 4px 12px rgb(0 0 0 / 35%);
   }
 
   &.is-dimmed {
-    opacity: 0.3;
+    opacity: 0.25;
   }
 }
 
@@ -131,41 +224,34 @@ $plot-sold: #6b7280;
   font-size: 0.875rem;
 }
 
-// Tile layout (no site plan) --------------------------------------
+// Grid view ------------------------------------------------------
 
 .plot-tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 0.625rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .plot-tile {
+  position: relative;
   display: grid;
   width: 100%;
-  min-height: 5.25rem;
-  align-content: center;
   gap: 0.125rem;
-  padding: 0.625rem 0.5rem;
-  border: 2px solid transparent;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid $border-soft;
+  border-top-width: 4px;
   border-radius: $border-radius;
-  text-align: center;
+  background: $surface;
+  text-align: left;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 
   strong {
     color: $ink;
-    font-size: 1.0625rem;
-  }
-
-  span {
-    color: $body-color;
-    font-size: 0.8125rem;
-  }
-
-  small {
-    font-size: 0.75rem;
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
     font-weight: 600;
   }
 
@@ -175,95 +261,139 @@ $plot-sold: #6b7280;
   }
 }
 
+.plot-tile__status {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.plot-tile__area {
+  color: $body-color;
+  font-size: 0.875rem;
+}
+
+.plot-tile__price {
+  color: $ink;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
 .plot-tile--available {
-  border-color: rgb(21 128 61 / 45%);
-  background: rgb(21 128 61 / 8%);
-  small { color: $plot-available; }
+  border-top-color: $plot-available;
+  .plot-tile__status { color: $plot-available; }
 }
 
 .plot-tile--reserved {
-  border-color: rgb(180 83 9 / 45%);
-  background: rgb(180 83 9 / 8%);
-  small { color: $plot-reserved; }
+  border-top-color: $plot-reserved;
+  .plot-tile__status { color: $plot-reserved; }
 }
 
 .plot-tile--sold {
-  border-color: rgb(107 114 128 / 35%);
-  background: rgb(107 114 128 / 10%);
+  border-top-color: $plot-sold;
+  background: $surface-soft;
 
   strong { color: #4b5563; text-decoration: line-through; }
-  small { color: #4b5563; }
+  .plot-tile__status { color: #4b5563; }
 }
 
-// List view ------------------------------------------------------
+// List view (table on desktop, stacked rows on phones) ----------------
 
-.plot-list {
-  display: grid;
-  gap: 0.5rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.plot-table-wrap {
+  overflow: hidden;
+  border: 1px solid $border-soft;
+  border-radius: $border-radius;
+}
 
-  button {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 0.875rem;
-    padding: 0.625rem;
-    border: 1px solid $border-soft;
-    border-radius: $border-radius-lg;
-    background: $surface;
+.plot-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    padding: 0.625rem 0.875rem;
+    background: $surface-soft;
+    color: $muted;
+    font-size: 0.8125rem;
+    font-weight: 600;
     text-align: left;
-
-    &:hover {
-      border-color: $border-strong;
-      box-shadow: $shadow-sm;
-    }
   }
 
-  img,
-  .plot-list__thumb {
-    width: 3.5rem;
-    height: 3.5rem;
-    flex: 0 0 auto;
-    border-radius: $border-radius;
+  td {
+    padding: 0.625rem 0.875rem;
+    border-top: 1px solid $border-soft;
+    vertical-align: middle;
+  }
+
+  tr.is-sold td {
+    color: $muted;
+  }
+}
+
+.plot-table__plot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+
+  img {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: $border-radius-sm;
     object-fit: cover;
   }
 }
 
-.plot-list__thumb {
-  display: grid;
-  place-items: center;
-  background: $surface-soft;
-  color: $ink;
-  font-weight: 700;
+.plot-table__price {
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.plot-list__main {
-  display: grid;
-  min-width: 0;
-  flex: 1;
+.plot-table__action {
+  text-align: right;
+}
 
-  strong {
-    color: $ink;
+@include media-breakpoint-down(md) {
+  .plot-availability {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  span {
-    color: $muted;
-    font-size: 0.875rem;
+  .plot-table thead {
+    display: none;
+  }
+
+  .plot-table tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem 1rem;
+    padding: 0.75rem 0.875rem;
+    border-top: 1px solid $border-soft;
+
+    &:first-child {
+      border-top: 0;
+    }
+  }
+
+  .plot-table td {
+    display: grid;
+    padding: 0;
+    border: 0;
+
+    &[data-label]::before {
+      content: attr(data-label);
+      color: $muted;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+  }
+
+  .plot-table__action {
+    grid-column: 1 / -1;
+    margin-top: 0.375rem;
+    text-align: left;
+
+    .btn {
+      width: 100%;
+    }
   }
 }
 
-.plot-list__side {
-  display: grid;
-  justify-items: end;
-  gap: 0.25rem;
-}
-
-.plot-list__price {
-  color: $ink;
-  font-weight: 700;
-}
 
 // Plot detail modal ----------------------------------------------
 

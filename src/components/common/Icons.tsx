@@ -77,3 +77,64 @@ export function CheckIcon({ size = 16, className }: IconProps) {
     </svg>
   )
 }
+
+export function ChevronLeftIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" className={className} aria-hidden="true" focusable="false">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6" />
+    </svg>
+  )
+}
+
+export function ChevronRightIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" className={className} aria-hidden="true" focusable="false">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 6l6 6-6 6" />
+    </svg>
+  )
+}
+
+export function ExpandIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true" focusable="false">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+    </svg>
+  )
+}
+
+export function ShareIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true" focusable="false">
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path strokeLinecap="round" d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" />
+    </svg>
+  )
+}
+
+export function CalendarIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true" focusable="false">
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
+      <path strokeLinecap="round" d="M3.5 10h17M8 3v4M16 3v4" />
+    </svg>
+  )
+}
+
+export function TagIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true" focusable="false">
+      <path strokeLinejoin="round" d="M3 12V4a1 1 0 011-1h8l9 9-9 9-9-9z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </svg>
+  )
+}
+
+export function HomeIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true" focusable="false">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-6h4v6" />
+    </svg>
+  )
+}
