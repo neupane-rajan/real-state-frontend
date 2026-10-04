@@ -339,3 +339,11 @@ export const deletePlot = async (propertyId: number, plotId: number) => {
 export const deletePlotImage = async (propertyId: number, plotId: number, imageId: number) => {
   await axiosInstance.delete(`/properties/${propertyId}/plots/${plotId}/images/${imageId}`)
 }
+
+// Short price for cards: own price, or "From" the cheapest available plot of a plot project.
+export const cardPrice = (property: Property, isNp: boolean) => {
+  const ownPrice = formatShortPrice(property.price, isNp)
+  if (ownPrice) return ownPrice
+  const lowestPlotPrice = isPlotProject(property) ? formatShortPrice(getLowestAvailablePlotPrice(property.plots), isNp) : null
+  return lowestPlotPrice ? `${isNp ? 'सुरु' : 'From'} ${lowestPlotPrice}` : null
+}

@@ -1,21 +1,22 @@
 import { useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Container } from 'react-bootstrap'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { getBannerImage, type Banner } from '../../api/banners'
-import { formatShortPrice, getPropertyImageUrls, getPropertyMeta, type Property } from '../../api/properties'
+import { getPropertyMeta, type Property } from '../../api/properties'
 import { companyInfo } from '../../constants/companyInfo'
 import { useLanguage } from '../../hooks/useLanguage'
 import { optimizedImageUrl } from '../../utils/images'
 import { translateCategory } from '../../utils/translateHelpers'
 import { MapPinIcon } from '../common/Icons'
+import { HeroFeatured } from './HeroFeatured'
 
 type HomeHeroProps = {
   banners: Banner[]
-  latestProperty?: Property
+  featured: Property[]
 }
 
-export function HomeHero({ banners, latestProperty }: HomeHeroProps) {
+export function HomeHero({ banners, featured }: HomeHeroProps) {
   const { language } = useLanguage()
   const isNp = language === 'np'
   const navigate = useNavigate()
@@ -40,9 +41,6 @@ export function HomeHero({ banners, latestProperty }: HomeHeroProps) {
     const query = params.toString()
     navigate(`/properties${query ? `?${query}` : ''}`)
   }
-
-  const latestImage = latestProperty ? getPropertyImageUrls(latestProperty)[0] : undefined
-  const latestPrice = latestProperty ? formatShortPrice(latestProperty.price, isNp) : null
 
   const facts = isNp
     ? [
@@ -115,25 +113,7 @@ export function HomeHero({ banners, latestProperty }: HomeHeroProps) {
           </div>
         </div>
 
-        {latestProperty ? (
-          <Link to={`/properties/${latestProperty.id}`} className="home-hero__listing">
-            {latestImage ? (
-              <img src={optimizedImageUrl(latestImage, 160)} alt="" width={64} height={64} />
-            ) : null}
-            <span>
-              <small>
-                {latestProperty.isFeatured
-                  ? isNp ? 'विशेष सूची' : 'Featured listing'
-                  : isNp ? 'नयाँ सूची' : 'Latest listing'}
-              </small>
-              <strong>{latestProperty.title}</strong>
-              <span>
-                {latestProperty.address}
-                {latestPrice ? ` · ${latestPrice}` : ''}
-              </span>
-            </span>
-          </Link>
-        ) : null}
+        <HeroFeatured listings={featured} />
       </Container>
     </section>
   )

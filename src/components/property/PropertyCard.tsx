@@ -1,11 +1,5 @@
 import { Link } from 'react-router-dom'
-import {
-  formatShortPrice,
-  getLowestAvailablePlotPrice,
-  getPropertyImageUrls,
-  isPlotProject,
-  type Property,
-} from '../../api/properties'
+import { cardPrice, getPropertyImageUrls, type Property } from '../../api/properties'
 import { useLanguage } from '../../hooks/useLanguage'
 import { translateCategory, translateStatus } from '../../utils/translateHelpers'
 import { optimizedImageUrl, optimizedSrcSet } from '../../utils/images'
@@ -22,11 +16,7 @@ export function PropertyCard({ property, layout = 'grid' }: PropertyCardProps) {
   const { language } = useLanguage()
   const isNp = language === 'np'
   const coverImage = getPropertyImageUrls(property)[0]
-  const ownPrice = formatShortPrice(property.price, isNp)
-  // Plot projects without an overall price show "from" the cheapest available plot.
-  const lowestPlotPrice =
-    !ownPrice && isPlotProject(property) ? formatShortPrice(getLowestAvailablePlotPrice(property.plots), isNp) : null
-  const price = ownPrice ?? (lowestPlotPrice ? `${isNp ? 'सुरु' : 'From'} ${lowestPlotPrice}` : null)
+  const price = cardPrice(property, isNp)
   const categoryName = translateCategory(property.category?.name, language)
   const statusName = translateStatus(property.status?.name, language)
   const statusClass = property.status?.name === 'Sold'

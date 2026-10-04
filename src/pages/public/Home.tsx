@@ -61,6 +61,10 @@ export function Home() {
 
   const banners = bannersQuery.data ?? []
   const featuredProperties = propertiesQuery.data ?? []
+  // Hero shows the featured listings; if none are featured, the newest three.
+  const heroFeatured = featuredProperties.some((property) => property.isFeatured)
+    ? featuredProperties.filter((property) => property.isFeatured)
+    : featuredProperties.slice(0, 3)
   const testimonials = (testimonialsQuery.data ?? []).slice(0, 3)
   const faqs = (faqsQuery.data ?? []).slice(0, 3)
   const latestBlogs = (blogsQuery.data ?? []).slice(0, 3)
@@ -74,7 +78,7 @@ export function Home() {
 
   return (
     <div className="home-page">
-      <HomeHero banners={banners} latestProperty={featuredProperties[0]} />
+      <HomeHero banners={banners} featured={heroFeatured} />
 
       <section className="section-block">
         <Container>
