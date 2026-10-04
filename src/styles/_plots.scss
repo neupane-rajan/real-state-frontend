@@ -517,3 +517,247 @@ $plot-sold: #6b7280;
 .admin-plot-status--available { color: $plot-available; }
 .admin-plot-status--reserved { color: $plot-reserved; }
 .admin-plot-status--sold { color: #4b5563; }
+
+// Layout view: rows of plots with roads between (public page + admin preview) ---
+
+.plot-layout {
+  display: grid;
+  gap: 0.375rem;
+  padding: 0.75rem;
+  overflow-x: auto;
+  border: 1px solid $border-soft;
+  border-radius: $border-radius;
+  background: #eef3ea; // light land green
+}
+
+// Every row fills the full width; plots share it equally, whatever their number.
+.plot-layout__row {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.plot-cell {
+  display: grid;
+  min-width: 4.75rem;
+  min-height: 6.5rem;
+  flex: 1 1 0;
+  align-content: center;
+  justify-items: center;
+  gap: 0.0625rem;
+  padding: 0.5rem 0.25rem;
+  border: 2px solid;
+  border-radius: 0.375rem;
+  background: $white;
+  color: $ink;
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  text-align: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+
+  strong {
+    font-family: var(--font-heading);
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  &.is-dimmed {
+    opacity: 0.3;
+  }
+
+  &.is-selected {
+    box-shadow: 0 0 0 3px $ink;
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .plot-layout {
+    padding: 0.5rem;
+  }
+
+  .plot-layout__row {
+    gap: 0.25rem;
+  }
+
+  .plot-cell {
+    min-width: 3.75rem;
+    min-height: 5.5rem;
+    font-size: 0.75rem;
+
+    strong { font-size: 0.9375rem; }
+  }
+
+  .plot-cell__status {
+    font-size: 0.625rem;
+    letter-spacing: 0;
+  }
+}
+
+button.plot-cell:hover {
+  z-index: 1;
+  box-shadow: $shadow-md;
+  transform: translateY(-2px);
+}
+
+.plot-cell__area {
+  color: $muted;
+}
+
+.plot-cell__price {
+  font-weight: 700;
+}
+
+.plot-cell__status {
+  margin-top: 0.125rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.plot-cell--available {
+  border-color: $plot-available;
+  background: #f0fdf4;
+  .plot-cell__status { color: $plot-available; }
+}
+
+.plot-cell--reserved {
+  border-color: $plot-reserved;
+  background: #fffbeb;
+  .plot-cell__status { color: $plot-reserved; }
+}
+
+.plot-cell--sold {
+  border-color: $plot-sold;
+  background: #e5e7eb;
+  color: #4b5563;
+
+  strong { text-decoration: line-through; }
+  .plot-cell__status { color: #4b5563; }
+}
+
+// Road: asphalt band with a dashed centre line and its label in the middle
+.plot-layout__road {
+  position: relative;
+  display: grid;
+  min-height: 2.75rem;
+  place-items: center;
+  margin: 0.25rem 0;
+  border-radius: 0.25rem;
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 85%) 50%, transparent 0) center / 2rem 2px repeat-x,
+    #6b7280;
+
+  span {
+    position: relative;
+    padding: 0.125rem 0.75rem;
+    border-radius: $border-radius-pill;
+    background: #4b5563;
+    color: $white;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}
+
+// Admin layout builder ----------------------------------------------------
+
+.layout-editor__empty {
+  padding: 1.5rem 1rem;
+  border: 1px dashed $border-strong;
+  border-radius: $border-radius;
+  text-align: center;
+}
+
+.layout-editor {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.layout-editor__row {
+  padding: 0.625rem 0.75rem;
+  border: 1px solid $border-soft;
+  border-left-width: 4px;
+  border-radius: $border-radius;
+  background: $white;
+}
+
+.layout-editor__row--plots { border-left-color: $plot-available; }
+.layout-editor__row--road { border-left-color: #6b7280; background: $surface-soft; }
+
+.layout-editor__row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.layout-editor__row-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.layout-editor__plots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.layout-editor__add {
+  width: auto;
+  min-width: 9rem;
+}
+
+.layout-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.125rem 0.25rem;
+  border: 1px solid;
+  border-radius: $border-radius-pill;
+  background: $white;
+  font-size: 0.875rem;
+
+  strong {
+    padding: 0 0.25rem;
+  }
+
+  button {
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: $muted;
+    line-height: 1;
+
+    &:hover:not(:disabled) {
+      background: $surface-soft;
+      color: $ink;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+    }
+  }
+}
+
+.layout-chip--available { border-color: $plot-available; }
+.layout-chip--reserved { border-color: $plot-reserved; }
+.layout-chip--sold { border-color: $plot-sold; }
+
+.layout-editor__save {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid $border-soft;
+}

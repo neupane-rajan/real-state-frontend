@@ -34,6 +34,12 @@ export type Plot = PlotSummary & {
   images: PropertyImage[]
 }
 
+// Plot project layout, top to bottom. Plot rows always span the full width,
+// so each side of a road can hold a different number of plots.
+export type PlotLayoutRow =
+  | { type: 'plots'; plotIds: number[] }
+  | { type: 'road'; label?: string }
+
 export type PropertyImage = {
   id: number
   image_url: string
@@ -66,6 +72,7 @@ export type Property = {
   createdAt: string
   updatedAt: string
   sitePlanUrl: string | null
+  plotLayout?: PlotLayoutRow[] | null
   plots?: Array<PlotSummary | Plot>
   category: PropertyCategory
   status: LookupItem
@@ -319,6 +326,10 @@ export const updatePlot = async (propertyId: number, plotId: number, payload: Pa
   )
 
   return response.data.data
+}
+
+export const savePlotLayout = async (propertyId: number, rows: PlotLayoutRow[]) => {
+  await axiosInstance.put(`/properties/${propertyId}/plot-layout`, { rows })
 }
 
 export const deletePlot = async (propertyId: number, plotId: number) => {

@@ -15,6 +15,7 @@ import {
   type PlotStatus,
 } from '../../api/properties'
 import { PlotForm } from '../../components/admin/PlotForm'
+import { PlotLayoutEditor } from '../../components/admin/PlotLayoutEditor'
 import { ErrorState } from '../../components/common/ErrorState'
 import { Loader } from '../../components/common/Loader'
 import { translatePlotStatus } from '../../utils/translateHelpers'
@@ -37,6 +38,7 @@ export function PlotsManage() {
   })
 
   const plots = sortPlots((project?.plots ?? []) as Plot[])
+  const inLayout = new Set((project?.plotLayout ?? []).flatMap((row) => (row.type === 'plots' ? row.plotIds : [])))
   const stats = getPlotStats(plots)
   const editingPlot = typeof editing === 'number' ? plots.find((plot) => plot.id === editing) ?? null : null
 
@@ -128,11 +130,7 @@ export function PlotsManage() {
             </div>
           </div>
         </div>
-      ) : (
-        <Alert variant="light" className="border">
-          No site plan yet — plots will be shown to visitors as a grid. To add one, use <strong>Edit</strong> on this property in the property list.
-        </Alert>
-      )}
+      ) : null}
 
       {plots.length === 0 ? (
         <div className="admin-panel">
@@ -147,7 +145,7 @@ export function PlotsManage() {
                 <th>Area</th>
                 <th>Price</th>
                 <th>Status</th>
-                <th>On plan</th>
+                <th>Placed</th>
                 <th><span className="visually-hidden">Actions</span></th>
               </tr>
             </thead>
@@ -174,8 +172,10 @@ export function PlotsManage() {
                       ))}
                     </Form.Select>
                   </td>
-                  <td data-label="On plan">
-                    {plot.layoutX !== null ? 'Yes' : <span className="text-muted">No</span>}
+                  <td data-label="Placed">
+                    {inLayout.has(plot.id) || plot.layoutX !== null
+                      ? [inLayout.has(plot.id) ? 'Layout' : null, plot.layoutX !== null ? 'Site plan' : null].filter(Boolean).join(' · ')
+                      : <span className="text-muted">Not yet</span>}
                     {plot.images.length > 0 ? <span className="d-block small text-muted">{plot.images.length} photo{plot.images.length > 1 ? 's' : ''}</span> : null}
                   </td>
                   <td className="text-lg-end">
@@ -199,6 +199,10 @@ export function PlotsManage() {
           </Table>
         </div>
       )}
+
+      <div className="mt-4">
+        <PlotLayoutEditor projectId={project.id} savedRows={project.plotLayout ?? []} plots={plots} />
+      </div>
 
       <Modal show={editing !== null} onHide={() => setEditing(null)} size="lg" fullscreen="md-down" scrollable backdrop="static">
         <Modal.Header closeButton>

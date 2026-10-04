@@ -13,8 +13,9 @@ import { useLanguage } from '../../hooks/useLanguage'
 import { optimizedImageUrl } from '../../utils/images'
 import { translatePlotStatus } from '../../utils/translateHelpers'
 import { PlotDetailModal } from './PlotDetailModal'
+import { PlotLayoutView } from './PlotLayoutView'
 
-type View = 'plan' | 'grid' | 'list'
+type View = 'layout' | 'plan' | 'grid' | 'list'
 
 const plotArea = (plot: Plot) => (plot.area ? `${plot.area}${plot.areaUnit ? ` ${plot.areaUnit}` : ''}` : '')
 
@@ -23,7 +24,10 @@ export function PlotProjectSection({ property }: { property: Property }) {
   const { language } = useLanguage()
   const isNp = language === 'np'
   const hasSitePlan = Boolean(property.sitePlanUrl)
-  const [view, setView] = useState<View>(hasSitePlan ? 'plan' : 'grid')
+  const layoutRows = property.plotLayout ?? []
+  const layoutPlotIds = new Set(layoutRows.flatMap((row) => (row.type === 'plots' ? row.plotIds : [])))
+  const hasLayout = (property.plots ?? []).some((plot) => layoutPlotIds.has(plot.id))
+  const [view, setView] = useState<View>(hasLayout ? 'layout' : hasSitePlan ? 'plan' : 'grid')
   const [statusFilter, setStatusFilter] = useState<PlotStatus | ''>('')
   const [selectedId, setSelectedId] = useState<number | null>(null)
 
@@ -34,6 +38,7 @@ export function PlotProjectSection({ property }: { property: Property }) {
   const visiblePlots = statusFilter ? plots.filter((plot) => plot.status === statusFilter) : plots
   const placedPlots = plots.filter((plot) => plot.layoutX !== null && plot.layoutY !== null)
   const unplacedCount = hasSitePlan ? plots.length - placedPlots.length : 0
+  const notInLayoutCount = plots.filter((plot) => !layoutPlotIds.has(plot.id)).length
 
   const statusLabel = (status: PlotStatus) => translatePlotStatus(status, language)
   const plotLabel = (plot: Plot) =>
@@ -42,6 +47,7 @@ export function PlotProjectSection({ property }: { property: Property }) {
     plot.status === 'SOLD' ? null : formatShortPrice(plot.price, isNp) ?? (isNp ? 'सम्पर्क गर्नुहोस्' : 'On request')
 
   const views: Array<{ key: View; label: string }> = [
+    ...(hasLayout ? [{ key: 'layout' as const, label: isNp ? 'नक्सा' : 'Layout' }] : []),
     ...(hasSitePlan ? [{ key: 'plan' as const, label: isNp ? 'साइट प्लान' : 'Site plan' }] : []),
     { key: 'grid', label: isNp ? 'ग्रिड' : 'Grid' },
     { key: 'list', label: isNp ? 'सूची' : 'List' },
@@ -131,6 +137,26 @@ export function PlotProjectSection({ property }: { property: Property }) {
               ))}
             </ul>
           </div>
+        </>
+      ) : null}
+
+      {view === 'layout' && hasLayout ? (
+        <>
+          <PlotLayoutView
+            rows={layoutRows}
+            plots={plots}
+            onSelect={(plot) => setSelectedId(plot.id)}
+            selectedId={selectedId}
+            isDimmed={(plot) => statusFilter !== '' && plot.status !== statusFilter}
+          />
+          <p className="plot-plan__hint">
+            {isNp ? 'विवरण हेर्न प्लटमा थिच्नुहोस्।' : 'Tap a plot to see its details.'}
+            {notInLayoutCount > 0
+              ? isNp
+                ? ` ${notInLayoutCount} प्लट नक्सामा देखाइएको छैन — ग्रिड वा सूचीमा हेर्नुहोस्।`
+                : ` ${notInLayoutCount} plot${notInLayoutCount > 1 ? 's are' : ' is'} not shown on the layout — see Grid or List.`
+              : ''}
+          </p>
         </>
       ) : null}
 
@@ -226,7 +252,7 @@ export function PlotProjectSection({ property }: { property: Property }) {
         </div>
       ) : null}
 
-      {view !== 'plan' && visiblePlots.length === 0 && plots.length > 0 ? (
+      {(view === 'grid' || view === 'list') && visiblePlots.length === 0 && plots.length > 0 ? (
         <p className="text-muted mt-3 mb-0">{isNp ? 'यो स्थितिमा कुनै प्लट छैन।' : 'No plots with this status.'}</p>
       ) : null}
 
