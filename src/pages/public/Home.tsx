@@ -65,8 +65,8 @@ export function Home() {
   const heroFeatured = featuredProperties.some((property) => property.isFeatured)
     ? featuredProperties.filter((property) => property.isFeatured)
     : featuredProperties.slice(0, 3)
-  const testimonials = (testimonialsQuery.data ?? []).slice(0, 3)
-  const faqs = (faqsQuery.data ?? []).slice(0, 3)
+  const testimonials = (testimonialsQuery.data ?? []).slice(0, 6)
+  const faqs = (faqsQuery.data ?? []).slice(0, 8)
   const latestBlogs = (blogsQuery.data ?? []).slice(0, 3)
 
   const services = [t('service1'), t('service2'), t('service3'), t('service4')]
