@@ -14,6 +14,7 @@ import { getPhoneHref, getWhatsAppUrl } from '../../utils/contact'
 import { optimizedImageUrl } from '../../utils/images'
 import { formatDate, localDigits } from '../../utils/nepali'
 import { localizeBlog } from '../../utils/localize'
+import { AutoText } from '../../components/common/AutoText'
 
 export function BlogDetail() {
   const { slug } = useParams<{ slug: string }>()
@@ -87,15 +88,15 @@ export function BlogDetail() {
                       A short first line that doesn't end a sentence is shown as a sub-heading. */}
                   {paragraphs.map((paragraph, index) => {
                     const [first, ...rest] = paragraph.split('\n')
-                    if (rest.length > 0 && first.length <= 80 && !/[.,;]$/.test(first.trim())) {
+                    if (rest.length > 0 && first.length <= 80 && !/[.,;।]$/.test(first.trim())) {
                       return (
                         <section key={index}>
-                          <h2 className="blog-reader__heading">{first.trim()}</h2>
-                          <p>{rest.join('\n').trim()}</p>
+                          <AutoText as="h2" className="blog-reader__heading">{first.trim()}</AutoText>
+                          <AutoText as="p">{rest.join('\n').trim()}</AutoText>
                         </section>
                       )
                     }
-                    return <p key={index}>{paragraph}</p>
+                    return <AutoText as="p" key={index}>{paragraph}</AutoText>
                   })}
                 </div>
               </div>

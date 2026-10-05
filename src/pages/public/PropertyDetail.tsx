@@ -39,6 +39,7 @@ import { optimizedImageUrl } from '../../utils/images'
 import { translateAmenity, translateCategory, translateStatus } from '../../utils/translateHelpers'
 import { formatDate } from '../../utils/nepali'
 import { localizeProperty } from '../../utils/localize'
+import { AutoText } from '../../components/common/AutoText'
 
 // schema.org structured data so search engines understand the listing.
 function PropertyStructuredData({ property }: { property: Property }) {
@@ -224,7 +225,7 @@ export function PropertyDetail() {
           <ol>
             <li><Link to="/">{isNp ? 'होम' : 'Home'}</Link></li>
             <li><Link to="/properties">{isNp ? 'सम्पत्ति' : 'Properties'}</Link></li>
-            <li aria-current="page">{property.title}</li>
+            <li aria-current="page"><AutoText>{property.title}</AutoText></li>
           </ol>
         </nav>
 
@@ -233,11 +234,11 @@ export function PropertyDetail() {
             <section className="pd-card pd-summary" aria-labelledby="pd-title">
               <header className="pd-summary__head">
                 <div className="pd-summary__main">
-                  <h1 id="pd-title" className="pd-summary__title">{property.title}</h1>
+                  <h1 id="pd-title" className="pd-summary__title"><AutoText>{property.title}</AutoText></h1>
                   {property.address ? (
                     <p className="pd-summary__location">
                       <MapPinIcon size={16} />
-                      <span>{property.address}</span>
+                      <AutoText>{property.address}</AutoText>
                     </p>
                   ) : null}
                   <div className="pd-summary__tags">
@@ -290,10 +291,10 @@ export function PropertyDetail() {
                 <h2 id="pd-desc-heading" className="pd-card__title">{isNp ? 'विवरण' : 'Description'}</h2>
                 {descriptionLines.length > 1 ? (
                   <ul className="pd-description-list">
-                    {descriptionLines.map((line, i) => <li key={i}>{line}</li>)}
+                    {descriptionLines.map((line, i) => <AutoText as="li" key={i}>{line}</AutoText>)}
                   </ul>
                 ) : (
-                  <p className="pd-section__text mb-0">{descriptionLines[0]}</p>
+                  <AutoText as="p" className="pd-section__text mb-0">{descriptionLines[0]}</AutoText>
                 )}
               </section>
             ) : null}
@@ -326,7 +327,7 @@ export function PropertyDetail() {
               </div>
               <p className="pd-summary__location mb-3">
                 <MapPinIcon size={16} />
-                <span>{property.address}</span>
+                <AutoText>{property.address}</AutoText>
               </p>
               <div className="pd-map">
                 <iframe

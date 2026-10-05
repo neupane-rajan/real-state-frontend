@@ -20,6 +20,7 @@ import { useLanguage } from '../../hooks/useLanguage'
 import { usePageMeta } from '../../hooks/usePageMeta'
 import { localDigits } from '../../utils/nepali'
 import { localizeFaq, localizeTestimonial } from '../../utils/localize'
+import { AutoText } from '../../components/common/AutoText'
 
 // Plain section heading: title, one line of context, and an optional text link.
 function SectionHeader({ title, intro, link }: { title: string; intro?: string; link?: ReactNode }) {
@@ -168,7 +169,7 @@ export function Home() {
                           <StarIcon key={i} className={i < Number(testimonial.rating ?? 5) ? 'is-on' : ''} />
                         ))}
                       </div>
-                      <blockquote className="mb-3">“{testimonial.message}”</blockquote>
+                      <blockquote className="mb-3">“<AutoText>{testimonial.message}</AutoText>”</blockquote>
                       <figcaption className="testimonial-card__person mb-0">
                         {avatar ? (
                           <img src={avatar} alt="" />
@@ -176,8 +177,8 @@ export function Home() {
                           <span aria-hidden="true">{testimonial.clientName?.charAt(0) ?? 'C'}</span>
                         )}
                         <div>
-                          <h3>{testimonial.clientName}</h3>
-                          {testimonial.role || testimonial.company ? <p>{testimonial.role ?? testimonial.company}</p> : null}
+                          <AutoText as="h3">{testimonial.clientName}</AutoText>
+                          {testimonial.role || testimonial.company ? <AutoText as="p">{testimonial.role || testimonial.company}</AutoText> : null}
                         </div>
                       </figcaption>
                     </figure>
@@ -204,8 +205,8 @@ export function Home() {
                 <Accordion className="faq-accordion">
                   {faqs.map((faq, index) => (
                     <Accordion.Item eventKey={String(index)} key={String(faq.id ?? faq.question)}>
-                      <Accordion.Header>{faq.question}</Accordion.Header>
-                      <Accordion.Body>{faq.answer}</Accordion.Body>
+                      <Accordion.Header><AutoText>{faq.question}</AutoText></Accordion.Header>
+                      <Accordion.Body><AutoText>{faq.answer}</AutoText></Accordion.Body>
                     </Accordion.Item>
                   ))}
                 </Accordion>

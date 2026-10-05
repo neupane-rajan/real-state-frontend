@@ -7,6 +7,19 @@ import App from './App.tsx'
 import { AuthProvider } from './context/AuthContext'
 import { LanguageProvider } from './context/LanguageContext'
 
+// Google Website Translator (AutoTranslate) replaces translated text nodes. Without this guard
+// React can throw when it later removes or inserts around a node the translator moved.
+const originalRemoveChild = Node.prototype.removeChild
+Node.prototype.removeChild = function <T extends Node>(this: Node, child: T): T {
+  if (child.parentNode !== this) return child
+  return originalRemoveChild.call(this, child) as T
+}
+const originalInsertBefore = Node.prototype.insertBefore
+Node.prototype.insertBefore = function <T extends Node>(this: Node, node: T, reference: Node | null): T {
+  if (reference && reference.parentNode !== this) return node
+  return originalInsertBefore.call(this, node, reference) as T
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

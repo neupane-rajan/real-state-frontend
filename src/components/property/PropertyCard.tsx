@@ -6,6 +6,7 @@ import { optimizedImageUrl, optimizedSrcSet } from '../../utils/images'
 import { MapPinIcon } from '../common/Icons'
 import { PropertyFactsInline } from './PropertyFacts'
 import { localizeProperty } from '../../utils/localize'
+import { AutoText } from '../common/AutoText'
 
 type PropertyCardProps = {
   property: Property
@@ -64,19 +65,19 @@ export function PropertyCard({ property: source, layout = 'grid' }: PropertyCard
 
         <h3 className="property-card__title">
           <Link to={`/properties/${property.id}`} className="stretched-link">
-            {property.title}
+            <AutoText>{property.title}</AutoText>
           </Link>
         </h3>
 
         {property.address ? (
           <p className="property-card__location">
             <MapPinIcon size={15} />
-            <span>{property.address}</span>
+            <AutoText>{property.address}</AutoText>
           </p>
         ) : null}
 
         {layout === 'row' && property.description ? (
-          <p className="property-card__excerpt">{property.description.replace(/\s+/g, ' ')}</p>
+          <AutoText as="p" className="property-card__excerpt">{property.description.replace(/\s+/g, ' ')}</AutoText>
         ) : null}
 
         <PropertyFactsInline property={property} />

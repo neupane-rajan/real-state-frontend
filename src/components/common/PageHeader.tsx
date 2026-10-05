@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Container } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../hooks/useLanguage'
+import { AutoText } from './AutoText'
 
 type Crumb = { label: string; to?: string }
 
@@ -25,12 +26,12 @@ export function PageHeader({ title, subtitle, crumbs = [], children }: PageHeade
           <ol>
             {trail.map((crumb, index) => (
               <li key={crumb.label} aria-current={index === trail.length - 1 ? 'page' : undefined}>
-                {crumb.to && index < trail.length - 1 ? <Link to={crumb.to}>{crumb.label}</Link> : crumb.label}
+                {crumb.to && index < trail.length - 1 ? <Link to={crumb.to}>{crumb.label}</Link> : <AutoText>{crumb.label}</AutoText>}
               </li>
             ))}
           </ol>
         </nav>
-        <h1 className="page-hero__title">{title}</h1>
+        <h1 className="page-hero__title"><AutoText>{title}</AutoText></h1>
         {subtitle ? <p className="page-hero__subtitle">{subtitle}</p> : null}
         {children ? <div className="page-hero__extra">{children}</div> : null}
       </Container>

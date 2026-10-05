@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Footer } from '../components/layout/Footer'
 import { Navbar } from '../components/layout/Navbar'
+import { AutoTranslate } from '../components/layout/AutoTranslate'
 import { WhatsAppIcon } from '../components/common/Icons'
 import { useLanguage } from '../hooks/useLanguage'
 import { getWhatsAppUrl } from '../utils/contact'
@@ -26,6 +27,7 @@ export function PublicLayout() {
         <Outlet />
       </main>
       <Footer />
+      <AutoTranslate />
       <a
         href={getWhatsAppUrl()}
         target="_blank"

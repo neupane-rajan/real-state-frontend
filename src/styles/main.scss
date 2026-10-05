@@ -512,3 +512,25 @@ p {
 .auth-card .card-body > p {
   max-width: none;
 }
+
+// Google Website Translator (AutoTranslate): hide its toolbar, popups and hover highlight
+body {
+  top: 0 !important;
+}
+
+.skiptranslate iframe,
+.goog-te-banner-frame,
+#goog-gt-tt,
+.goog-te-balloon-frame,
+.goog-tooltip,
+.VIpgJd-ZVi9od-ORHb-OEVmcd,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-yAWNEb-L7lbkb {
+  display: none !important;
+}
+
+.goog-text-highlight,
+.VIpgJd-yAWNEb-VIpgJd-fmcmS-sn54Q {
+  background: none !important;
+  box-shadow: none !important;
+}

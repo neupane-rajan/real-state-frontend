@@ -4,6 +4,7 @@ import { useLanguage } from '../../hooks/useLanguage'
 import { optimizedImageUrl } from '../../utils/images'
 import { formatDate, localDigits } from '../../utils/nepali'
 import { localizeBlog } from '../../utils/localize'
+import { AutoText } from '../common/AutoText'
 
 type BlogCardProps = {
   blog: BlogPost
@@ -47,10 +48,10 @@ export function BlogCard({ blog: source, variant = 'grid' }: BlogCardProps) {
           {variant !== 'compact' ? <span>{isNp ? `${localDigits(minutes, true)} मिनेट पढाइ` : `${minutes} min read`}</span> : null}
         </p>
         <h3 className="blog-card__title">
-          <Link to={`/blogs/${blog.slug}`} className="stretched-link">{blog.title}</Link>
+          <Link to={`/blogs/${blog.slug}`} className="stretched-link"><AutoText>{blog.title}</AutoText></Link>
         </h3>
         {variant !== 'compact' ? (
-          <p className="blog-card__excerpt">{excerpt(blog.content, variant === 'featured' ? 260 : 140)}</p>
+          <AutoText as="p" className="blog-card__excerpt">{excerpt(blog.content, variant === 'featured' ? 260 : 140)}</AutoText>
         ) : null}
         {variant !== 'compact' ? (
           <span className="blog-card__cta" aria-hidden="true">{isNp ? 'पूरा पढ्नुहोस्' : 'Read article'} →</span>

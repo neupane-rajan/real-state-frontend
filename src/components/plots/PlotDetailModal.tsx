@@ -8,6 +8,7 @@ import { PhoneIcon, WhatsAppIcon } from '../common/Icons'
 import { PropertyGallery } from '../property/PropertyGallery'
 import { translateMeasure } from '../../utils/nepali'
 import { localizePlot } from '../../utils/localize'
+import { AutoText } from '../common/AutoText'
 
 type PlotDetailModalProps = {
   project: Property
@@ -68,7 +69,7 @@ export function PlotDetailModal({ project, plot: source, onClose, onShowAvailabl
           ))}
         </dl>
 
-        {plot.description ? <p className="plot-description">{plot.description}</p> : null}
+        {plot.description ? <AutoText as="p" className="plot-description">{plot.description}</AutoText> : null}
 
         {isSold ? (
           <div className="plot-sold-note">
