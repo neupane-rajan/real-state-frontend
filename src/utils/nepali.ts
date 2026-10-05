@@ -46,3 +46,7 @@ export const translateMeasure = (text: string | null | undefined, isNp: boolean)
   if (!isNp) return text
   return toNepaliDigits(WORDS.reduce((result, [pattern, word]) => result.replace(pattern, word), text))
 }
+
+// Admin content: the Nepali version when the site is in Nepali and one was entered, else English.
+export const localized = (english: string | null | undefined, nepali: string | null | undefined, isNp: boolean) =>
+  (isNp && nepali?.trim() ? nepali : english) ?? ''

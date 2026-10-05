@@ -26,7 +26,7 @@ export function Blogs() {
 
   const query = searchTerm.trim().toLowerCase()
   const filtered = blogs.filter((blog: BlogPost) =>
-    !query || `${blog.title ?? ''} ${blog.content ?? ''}`.toLowerCase().includes(query),
+    !query || `${blog.title ?? ''} ${blog.content ?? ''} ${blog.titleNp ?? ''} ${blog.contentNp ?? ''}`.toLowerCase().includes(query),
   )
   // The newest article is featured unless the visitor is searching.
   const [featured, ...rest] = query ? [undefined, ...filtered] : filtered

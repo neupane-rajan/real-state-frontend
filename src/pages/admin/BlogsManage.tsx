@@ -8,8 +8,9 @@ import { createBlog, deleteBlog, getBlogs, updateBlog, type BlogFormPayload, typ
 import { ErrorState } from '../../components/common/ErrorState'
 import { Loader } from '../../components/common/Loader'
 import { optimizedImageUrl } from '../../utils/images'
+import { TranslateButton } from '../../components/admin/TranslateButton'
 
-const emptyForm: BlogFormPayload = { title: '', content: '', author: '' }
+const emptyForm: BlogFormPayload = { title: '', content: '', author: '', titleNp: '', contentNp: '' }
 
 export function BlogsManage() {
   const queryClient = useQueryClient()
@@ -20,12 +21,18 @@ export function BlogsManage() {
     register,
     handleSubmit,
     reset,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<BlogFormPayload>({ defaultValues: emptyForm })
 
   const startEdit = (blog: BlogPost | null) => {
     setEditing(blog)
-    reset(blog ? { title: blog.title ?? '', content: blog.content ?? '', author: blog.author ?? '' } : emptyForm)
+    reset(
+      blog
+        ? { title: blog.title ?? '', content: blog.content ?? '', author: blog.author ?? '', titleNp: blog.titleNp ?? '', contentNp: blog.contentNp ?? '' }
+        : emptyForm,
+    )
     if (blog) window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -113,6 +120,32 @@ export function BlogsManage() {
                 />
                 <Form.Control.Feedback type="invalid">{errors.content?.message}</Form.Control.Feedback>
                 <Form.Text>Leave an empty line between paragraphs.</Form.Text>
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <div className="admin-np-heading">
+                <strong>नेपाली (Nepali version)</strong>
+                <span className="text-muted small">Shown when the site is in Nepali. Leave empty to show the English text.</span>
+              </div>
+              <TranslateButton
+                getSources={() => [getValues('title') ?? '', getValues('content') ?? '']}
+                getCurrent={() => [getValues('titleNp') ?? '', getValues('contentNp') ?? '']}
+                onTranslated={(texts) => {
+                    setValue('titleNp', texts[0], { shouldDirty: true })
+                    setValue('contentNp', texts[1], { shouldDirty: true })
+                }}
+              />
+            </Col>
+            <Col md={12}>
+              <Form.Group controlId="blogs-titleNp">
+                <Form.Label>शीर्षक (Title in Nepali) <span className="form-optional">(optional)</span></Form.Label>
+                <Form.Control lang="ne" {...register('titleNp', { maxLength: 200 })} />
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <Form.Group controlId="blogs-contentNp">
+                <Form.Label>लेख (Article in Nepali) <span className="form-optional">(optional)</span></Form.Label>
+                <Form.Control as="textarea" rows={10} lang="ne" {...register('contentNp', { maxLength: 50000 })} />
               </Form.Group>
             </Col>
           </Row>

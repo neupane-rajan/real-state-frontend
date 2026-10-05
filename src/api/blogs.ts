@@ -16,6 +16,8 @@ export type BlogPost = {
   title?: string
   slug?: string
   content?: string
+  titleNp?: string | null
+  contentNp?: string | null
   coverImage?: string | null
   author?: string
   createdAt?: string
@@ -25,6 +27,8 @@ export type BlogPost = {
 export type BlogFormPayload = {
   title: string
   content: string
+  titleNp?: string
+  contentNp?: string
   author?: string
   coverImage?: FileList
 }
@@ -77,6 +81,8 @@ const buildBlogFormData = (payload: BlogFormPayload) => {
   formData.append('title', payload.title)
   formData.append('content', payload.content)
   formData.append('author', payload.author ?? '')
+  if (payload.titleNp !== undefined) formData.append('titleNp', payload.titleNp)
+  if (payload.contentNp !== undefined) formData.append('contentNp', payload.contentNp)
   if (payload.coverImage && payload.coverImage.length > 0) {
     formData.append('coverImage', payload.coverImage[0])
   }

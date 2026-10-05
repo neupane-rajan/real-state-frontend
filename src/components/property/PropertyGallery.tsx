@@ -110,7 +110,7 @@ export function PropertyGallery({ property }: GalleryProps) {
       ) : null}
 
       <Modal show={isFullscreen} onHide={() => setIsFullscreen(false)} fullscreen className="gallery-lightbox" aria-label={property.title}>
-        <Modal.Header closeButton closeVariant="white">
+        <Modal.Header closeButton closeVariant="white" closeLabel={isNp ? 'बन्द गर्नुहोस्' : 'Close'}>
           <Modal.Title as="p" className="h6 mb-0 text-white">{photoLabel(active)}</Modal.Title>
         </Modal.Header>
         <Modal.Body onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>

@@ -17,6 +17,7 @@ import {
   type PropertyMeta,
 } from '../../api/properties'
 import { categoryEmoji } from '../../utils/translateHelpers'
+import { TranslateButton } from './TranslateButton'
 
 const MAX_IMAGE_MB = 10
 const MAX_VIDEO_MB = 100
@@ -26,6 +27,9 @@ const emptyForm: PropertyFormPayload = {
   title: '',
   description: '',
   address: '',
+  titleNp: '',
+  descriptionNp: '',
+  addressNp: '',
   categoryId: '',
   statusId: '',
   price: '',
@@ -45,6 +49,9 @@ const toFormValues = (property: Property | null): PropertyFormPayload =>
         title: property.title,
         description: property.description,
         address: property.address,
+        titleNp: property.titleNp ?? '',
+        descriptionNp: property.descriptionNp ?? '',
+        addressNp: property.addressNp ?? '',
         categoryId: String(property.category?.id ?? ''),
         statusId: String(property.status?.id ?? ''),
         price: property.price === null ? '' : String(property.price),
@@ -102,6 +109,8 @@ export function PropertyForm({ property, meta, onSaved, onCancel }: PropertyForm
     register,
     handleSubmit,
     control,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<PropertyFormPayload>({ defaultValues: toFormValues(property) })
 
@@ -256,6 +265,40 @@ export function PropertyForm({ property, meta, onSaved, onCancel }: PropertyForm
                 })}
               />
               <Form.Control.Feedback type="invalid">{errors.description?.message}</Form.Control.Feedback>
+            </Form.Group>
+          </Col>
+        </Row>
+      </fieldset>
+
+      <fieldset className="admin-form__section">
+        <legend>नेपाली (Nepali version) <Optional /></legend>
+        <p className="text-muted small">Shown when visitors switch the site to Nepali. Leave empty to show the English text.</p>
+        <TranslateButton
+          getSources={() => [getValues('title'), getValues('address'), getValues('description')]}
+          getCurrent={() => [getValues('titleNp'), getValues('addressNp'), getValues('descriptionNp')]}
+          onTranslated={([titleNp, addressNp, descriptionNp]) => {
+            setValue('titleNp', titleNp, { shouldDirty: true })
+            setValue('addressNp', addressNp, { shouldDirty: true })
+            setValue('descriptionNp', descriptionNp, { shouldDirty: true })
+          }}
+        />
+        <Row className="g-3 mt-0">
+          <Col md={12}>
+            <Form.Group controlId="property-title-np">
+              <Form.Label>शीर्षक (Title in Nepali)</Form.Label>
+              <Form.Control lang="ne" maxLength={150} {...register('titleNp')} />
+            </Form.Group>
+          </Col>
+          <Col md={12}>
+            <Form.Group controlId="property-address-np">
+              <Form.Label>स्थान (Location in Nepali)</Form.Label>
+              <Form.Control lang="ne" maxLength={200} {...register('addressNp')} />
+            </Form.Group>
+          </Col>
+          <Col md={12}>
+            <Form.Group controlId="property-description-np">
+              <Form.Label>विवरण (Description in Nepali)</Form.Label>
+              <Form.Control as="textarea" rows={5} lang="ne" maxLength={5000} {...register('descriptionNp')} />
             </Form.Group>
           </Col>
         </Row>

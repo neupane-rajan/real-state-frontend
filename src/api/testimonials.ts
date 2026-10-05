@@ -16,6 +16,9 @@ export type Testimonial = {
   role?: string
   company?: string
   message?: string
+  clientNameNp?: string | null
+  roleNp?: string | null
+  messageNp?: string | null
   rating?: string | number
   avatar?: string
   avatarUrl?: string
@@ -30,6 +33,9 @@ export type TestimonialFormPayload = {
   role: string
   company: string
   message: string
+  clientNameNp?: string
+  roleNp?: string
+  messageNp?: string
   rating: string
   avatar?: FileList
 }
@@ -76,6 +82,9 @@ const buildTestimonialFormData = (payload: TestimonialFormPayload) => {
   formData.append('company', payload.company)
   formData.append('message', payload.message)
   formData.append('rating', payload.rating)
+  for (const field of ['clientNameNp', 'roleNp', 'messageNp'] as const) {
+    if (payload[field] !== undefined) formData.append(field, payload[field] ?? '')
+  }
 
   const avatar = payload.avatar?.[0]
   if (avatar) {

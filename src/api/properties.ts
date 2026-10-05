@@ -30,6 +30,7 @@ export type Plot = PlotSummary & {
   areaUnit: string | null
   facing: string | null
   description: string | null
+  descriptionNp?: string | null
   layoutX: number | null
   layoutY: number | null
   images: PropertyImage[]
@@ -63,6 +64,10 @@ export type Property = {
   description: string
   price: number | null
   address: string
+  // Optional Nepali versions (null/empty = show the English text)
+  titleNp?: string | null
+  descriptionNp?: string | null
+  addressNp?: string | null
   locationLink: string | null
   bedrooms: number | null
   bathrooms: number | null
@@ -94,6 +99,9 @@ export type PropertyFormPayload = {
   title: string
   description: string
   address: string
+  titleNp: string
+  descriptionNp: string
+  addressNp: string
   categoryId: string
   statusId: string
   price: string
@@ -120,6 +128,7 @@ export type PlotFormPayload = {
   price: string
   facing: string
   description: string
+  descriptionNp: string
   layoutX: string
   layoutY: string
   plotImages?: FileList
@@ -234,7 +243,7 @@ export const getAdminProperties = async () => {
 const buildPropertyFormData = (payload: Partial<PropertyFormPayload>) => {
   const formData = new FormData()
   const textFields = [
-    'title', 'description', 'address', 'categoryId', 'statusId', 'price',
+    'title', 'description', 'address', 'titleNp', 'descriptionNp', 'addressNp', 'categoryId', 'statusId', 'price',
     'bedrooms', 'bathrooms', 'area', 'roadAccess', 'locationLink',
   ] as const
 
@@ -304,7 +313,7 @@ export const deleteSitePlan = async (propertyId: number) => {
 
 const buildPlotFormData = (payload: Partial<PlotFormPayload>) => {
   const formData = new FormData()
-  const fields = ['plotNumber', 'area', 'areaUnit', 'status', 'price', 'facing', 'description', 'layoutX', 'layoutY'] as const
+  const fields = ['plotNumber', 'area', 'areaUnit', 'status', 'price', 'facing', 'description', 'descriptionNp', 'layoutX', 'layoutY'] as const
 
   fields.forEach((field) => {
     const value = payload[field]

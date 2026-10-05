@@ -19,6 +19,7 @@ import { companyInfo } from '../../constants/companyInfo'
 import { useLanguage } from '../../hooks/useLanguage'
 import { usePageMeta } from '../../hooks/usePageMeta'
 import { localDigits } from '../../utils/nepali'
+import { localizeFaq, localizeTestimonial } from '../../utils/localize'
 
 // Plain section heading: title, one line of context, and an optional text link.
 function SectionHeader({ title, intro, link }: { title: string; intro?: string; link?: ReactNode }) {
@@ -62,8 +63,8 @@ export function Home() {
 
   const banners = bannersQuery.data ?? []
   const featuredProperties = propertiesQuery.data ?? []
-  const testimonials = (testimonialsQuery.data ?? []).slice(0, 6)
-  const faqs = (faqsQuery.data ?? []).slice(0, 8)
+  const testimonials = (testimonialsQuery.data ?? []).slice(0, 6).map((item) => localizeTestimonial(item, isNp))
+  const faqs = (faqsQuery.data ?? []).slice(0, 8).map((item) => localizeFaq(item, isNp))
   const latestBlogs = (blogsQuery.data ?? []).slice(0, 3)
 
   const services = [t('service1'), t('service2'), t('service3'), t('service4')]

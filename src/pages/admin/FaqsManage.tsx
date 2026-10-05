@@ -6,8 +6,9 @@ import { getApiErrorMessage } from '../../api/axiosInstance'
 import { createFaq, deleteFaq, getFaqs, updateFaq, type Faq, type FaqFormPayload } from '../../api/faqs'
 import { ErrorState } from '../../components/common/ErrorState'
 import { Loader } from '../../components/common/Loader'
+import { TranslateButton } from '../../components/admin/TranslateButton'
 
-const emptyForm: FaqFormPayload = { question: '', answer: '', category: '' }
+const emptyForm: FaqFormPayload = { question: '', answer: '', category: '', questionNp: '', answerNp: '' }
 
 export function FaqsManage() {
   const queryClient = useQueryClient()
@@ -18,12 +19,18 @@ export function FaqsManage() {
     register,
     handleSubmit,
     reset,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<FaqFormPayload>({ defaultValues: emptyForm })
 
   const startEdit = (faq: Faq | null) => {
     setEditing(faq)
-    reset(faq ? { question: faq.question ?? '', answer: faq.answer ?? '', category: faq.category ?? '' } : emptyForm)
+    reset(
+      faq
+        ? { question: faq.question ?? '', answer: faq.answer ?? '', category: faq.category ?? '', questionNp: faq.questionNp ?? '', answerNp: faq.answerNp ?? '' }
+        : emptyForm,
+    )
     if (faq) window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -53,7 +60,7 @@ export function FaqsManage() {
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">FAQs</h1>
-          <p className="text-muted mb-0">Answers to questions buyers often ask. The first three appear on the home page.</p>
+          <p className="text-muted mb-0">Answers to questions buyers often ask. Up to eight appear on the home page.</p>
         </div>
       </div>
 
@@ -93,6 +100,32 @@ export function FaqsManage() {
                   {...register('answer', { required: 'Answer is required.' })}
                 />
                 <Form.Control.Feedback type="invalid">{errors.answer?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <div className="admin-np-heading">
+                <strong>नेपाली (Nepali version)</strong>
+                <span className="text-muted small">Shown when the site is in Nepali. Leave empty to show the English text.</span>
+              </div>
+              <TranslateButton
+                getSources={() => [getValues('question') ?? '', getValues('answer') ?? '']}
+                getCurrent={() => [getValues('questionNp') ?? '', getValues('answerNp') ?? '']}
+                onTranslated={(texts) => {
+                    setValue('questionNp', texts[0], { shouldDirty: true })
+                    setValue('answerNp', texts[1], { shouldDirty: true })
+                }}
+              />
+            </Col>
+            <Col md={12}>
+              <Form.Group controlId="faqs-questionNp">
+                <Form.Label>प्रश्न (Question in Nepali) <span className="form-optional">(optional)</span></Form.Label>
+                <Form.Control lang="ne" {...register('questionNp', { maxLength: 500 })} />
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <Form.Group controlId="faqs-answerNp">
+                <Form.Label>उत्तर (Answer in Nepali) <span className="form-optional">(optional)</span></Form.Label>
+                <Form.Control as="textarea" rows={4} lang="ne" {...register('answerNp', { maxLength: 5000 })} />
               </Form.Group>
             </Col>
           </Row>

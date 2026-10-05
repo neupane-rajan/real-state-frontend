@@ -7,6 +7,7 @@ import { InquiryForm } from '../common/InquiryForm'
 import { PhoneIcon, WhatsAppIcon } from '../common/Icons'
 import { PropertyGallery } from '../property/PropertyGallery'
 import { translateMeasure } from '../../utils/nepali'
+import { localizePlot } from '../../utils/localize'
 
 type PlotDetailModalProps = {
   project: Property
@@ -15,11 +16,12 @@ type PlotDetailModalProps = {
   onShowAvailable: () => void
 }
 
-export function PlotDetailModal({ project, plot, onClose, onShowAvailable }: PlotDetailModalProps) {
+export function PlotDetailModal({ project, plot: source, onClose, onShowAvailable }: PlotDetailModalProps) {
   const { language } = useLanguage()
   const isNp = language === 'np'
 
-  if (!plot) return null
+  if (!source) return null
+  const plot = localizePlot(source, isNp)
 
   const price = formatNprPrice(plot.price, isNp)
   const isSold = plot.status === 'SOLD'
@@ -38,7 +40,7 @@ export function PlotDetailModal({ project, plot, onClose, onShowAvailable }: Plo
 
   return (
     <Modal show onHide={onClose} size="lg" centered fullscreen="sm-down" scrollable aria-labelledby="plot-modal-title">
-      <Modal.Header closeButton>
+      <Modal.Header closeButton closeLabel={isNp ? 'बन्द गर्नुहोस्' : 'Close'}>
         <Modal.Title id="plot-modal-title" as="h2" className="h5 d-flex align-items-center gap-2 flex-wrap">
           {isNp ? 'प्लट नं.' : 'Plot'} {plot.plotNumber}
           <span className={`plot-status plot-status--${plot.status.toLowerCase()}`}>

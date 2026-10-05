@@ -5,6 +5,7 @@ import { translateCategory, translateStatus } from '../../utils/translateHelpers
 import { optimizedImageUrl, optimizedSrcSet } from '../../utils/images'
 import { MapPinIcon } from '../common/Icons'
 import { PropertyFactsInline } from './PropertyFacts'
+import { localizeProperty } from '../../utils/localize'
 
 type PropertyCardProps = {
   property: Property
@@ -12,9 +13,10 @@ type PropertyCardProps = {
   layout?: 'grid' | 'row'
 }
 
-export function PropertyCard({ property, layout = 'grid' }: PropertyCardProps) {
+export function PropertyCard({ property: source, layout = 'grid' }: PropertyCardProps) {
   const { language } = useLanguage()
   const isNp = language === 'np'
+  const property = localizeProperty(source, isNp)
   const coverImage = getPropertyImageUrls(property)[0]
   const price = cardPrice(property, isNp)
   const categoryName = translateCategory(property.category?.name, language)

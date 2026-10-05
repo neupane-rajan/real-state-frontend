@@ -38,6 +38,7 @@ import { getPhoneHref, getPropertyWhatsAppMessage, getWhatsAppUrl } from '../../
 import { optimizedImageUrl } from '../../utils/images'
 import { translateAmenity, translateCategory, translateStatus } from '../../utils/translateHelpers'
 import { formatDate } from '../../utils/nepali'
+import { localizeProperty } from '../../utils/localize'
 
 // schema.org structured data so search engines understand the listing.
 function PropertyStructuredData({ property }: { property: Property }) {
@@ -82,7 +83,7 @@ export function PropertyDetail() {
   const [shareStatus, setShareStatus] = useState<string | null>(null)
 
   const {
-    data: property,
+    data: rawProperty,
     isLoading,
     isError,
     error,
@@ -93,6 +94,8 @@ export function PropertyDetail() {
     retry: (count, queryError) =>
       !(axios.isAxiosError(queryError) && queryError.response?.status === 404) && count < 1,
   })
+
+  const property = rawProperty ? localizeProperty(rawProperty, isNp) : rawProperty
 
   // Shares the listing page's cached query, so returning visitors don't refetch.
   const allPropertiesQuery = useQuery({
@@ -210,7 +213,8 @@ export function PropertyDetail() {
     }
   }
 
-  const mapQuery = encodeURIComponent(`${property.address}, Nepal`)
+  // English address: map search works best with it
+  const mapQuery = encodeURIComponent(`${rawProperty?.address ?? property.address}, Nepal`)
 
   return (
     <div className="pd-page">

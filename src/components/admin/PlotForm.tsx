@@ -14,6 +14,7 @@ import {
   type Property,
 } from '../../api/properties'
 import { translatePlotStatus } from '../../utils/translateHelpers'
+import { TranslateButton } from './TranslateButton'
 
 const AREA_UNITS = ['aana', 'dhur', 'kattha', 'ropani', 'bigha', 'sq.ft']
 const FACINGS = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West']
@@ -27,6 +28,7 @@ const toFormValues = (plot: Plot | null): PlotFormPayload => ({
   price: plot?.price != null ? String(plot.price) : '',
   facing: plot?.facing ?? '',
   description: plot?.description ?? '',
+  descriptionNp: plot?.descriptionNp ?? '',
   layoutX: plot?.layoutX != null ? String(plot.layoutX) : '',
   layoutY: plot?.layoutY != null ? String(plot.layoutY) : '',
 })
@@ -47,6 +49,7 @@ export function PlotForm({ project, plot, onSaved, onCancel }: PlotFormProps) {
     handleSubmit,
     control,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<PlotFormPayload>({ defaultValues: toFormValues(plot) })
 
@@ -178,6 +181,19 @@ export function PlotForm({ project, plot, onSaved, onCancel }: PlotFormProps) {
               <Form.Label>Description <span className="form-optional">(optional)</span></Form.Label>
               <Form.Control as="textarea" rows={3} placeholder="e.g. Corner plot on a 20 ft road" {...register('description', { maxLength: 2000 })} />
             </Form.Group>
+          </Col>
+          <Col md={12}>
+            <Form.Group controlId="plot-description-np">
+              <Form.Label>विवरण (Description in Nepali) <span className="form-optional">(optional)</span></Form.Label>
+              <Form.Control as="textarea" rows={2} lang="ne" {...register('descriptionNp', { maxLength: 2000 })} />
+            </Form.Group>
+            <div className="mt-2">
+              <TranslateButton
+                getSources={() => [getValues('description')]}
+                getCurrent={() => [getValues('descriptionNp')]}
+                onTranslated={([text]) => setValue('descriptionNp', text, { shouldDirty: true })}
+              />
+            </div>
           </Col>
         </Row>
       </fieldset>

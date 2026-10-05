@@ -14,8 +14,18 @@ import {
 } from '../../api/testimonials'
 import { ErrorState } from '../../components/common/ErrorState'
 import { Loader } from '../../components/common/Loader'
+import { TranslateButton } from '../../components/admin/TranslateButton'
 
-const emptyForm: TestimonialFormPayload = { clientName: '', role: '', company: '', message: '', rating: '5' }
+const emptyForm: TestimonialFormPayload = {
+  clientName: '',
+  role: '',
+  company: '',
+  message: '',
+  rating: '5',
+  clientNameNp: '',
+  roleNp: '',
+  messageNp: '',
+}
 
 export function TestimonialsManage() {
   const queryClient = useQueryClient()
@@ -26,6 +36,8 @@ export function TestimonialsManage() {
     register,
     handleSubmit,
     reset,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<TestimonialFormPayload>({ defaultValues: emptyForm })
 
@@ -39,6 +51,9 @@ export function TestimonialsManage() {
             company: testimonial.company ?? '',
             message: testimonial.message ?? '',
             rating: String(testimonial.rating ?? 5),
+            clientNameNp: testimonial.clientNameNp ?? '',
+            roleNp: testimonial.roleNp ?? '',
+            messageNp: testimonial.messageNp ?? '',
           }
         : emptyForm,
     )
@@ -72,7 +87,7 @@ export function TestimonialsManage() {
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">Testimonials</h1>
-          <p className="text-muted mb-0">What real clients said about you. The latest three appear on the home page. Only add reviews clients agreed to share.</p>
+          <p className="text-muted mb-0">What real clients said about you. The latest six appear on the home page. Only add reviews clients agreed to share.</p>
         </div>
       </div>
 
@@ -147,6 +162,39 @@ export function TestimonialsManage() {
                   })}
                 />
                 <Form.Control.Feedback type="invalid">{errors.message?.message}</Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <div className="admin-np-heading">
+                <strong>नेपाली (Nepali version)</strong>
+                <span className="text-muted small">Shown when the site is in Nepali. Leave empty to show the English text.</span>
+              </div>
+              <TranslateButton
+                getSources={() => [getValues('clientName') ?? '', getValues('role') ?? '', getValues('message') ?? '']}
+                getCurrent={() => [getValues('clientNameNp') ?? '', getValues('roleNp') ?? '', getValues('messageNp') ?? '']}
+                onTranslated={(texts) => {
+                    setValue('clientNameNp', texts[0], { shouldDirty: true })
+                    setValue('roleNp', texts[1], { shouldDirty: true })
+                    setValue('messageNp', texts[2], { shouldDirty: true })
+                }}
+              />
+            </Col>
+            <Col md={12}>
+              <Form.Group controlId="testimonials-clientNameNp">
+                <Form.Label>नाम (Name in Nepali) <span className="form-optional">(optional)</span></Form.Label>
+                <Form.Control lang="ne" {...register('clientNameNp', { maxLength: 100 })} />
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <Form.Group controlId="testimonials-roleNp">
+                <Form.Label>परिचय (Role in Nepali) <span className="form-optional">(optional)</span></Form.Label>
+                <Form.Control lang="ne" {...register('roleNp', { maxLength: 100 })} />
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <Form.Group controlId="testimonials-messageNp">
+                <Form.Label>भनाइ (What they said, in Nepali) <span className="form-optional">(optional)</span></Form.Label>
+                <Form.Control as="textarea" rows={3} lang="ne" {...register('messageNp', { maxLength: 2000 })} />
               </Form.Group>
             </Col>
           </Row>

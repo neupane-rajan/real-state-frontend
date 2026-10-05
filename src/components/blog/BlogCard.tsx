@@ -3,6 +3,7 @@ import type { BlogPost } from '../../api/blogs'
 import { useLanguage } from '../../hooks/useLanguage'
 import { optimizedImageUrl } from '../../utils/images'
 import { formatDate, localDigits } from '../../utils/nepali'
+import { localizeBlog } from '../../utils/localize'
 
 type BlogCardProps = {
   blog: BlogPost
@@ -17,9 +18,10 @@ const excerpt = (content = '', length = 160) => {
 }
 
 // One blog card used on the home page, the blog list and article sidebars.
-export function BlogCard({ blog, variant = 'grid' }: BlogCardProps) {
+export function BlogCard({ blog: source, variant = 'grid' }: BlogCardProps) {
   const { language } = useLanguage()
   const isNp = language === 'np'
+  const blog = localizeBlog(source, isNp)
   const date = blog.createdAt
     ? formatDate(blog.createdAt, isNp, 'short')
     : ''

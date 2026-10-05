@@ -13,17 +13,19 @@ import { usePageMeta } from '../../hooks/usePageMeta'
 import { getPhoneHref, getWhatsAppUrl } from '../../utils/contact'
 import { optimizedImageUrl } from '../../utils/images'
 import { formatDate, localDigits } from '../../utils/nepali'
+import { localizeBlog } from '../../utils/localize'
 
 export function BlogDetail() {
   const { slug } = useParams<{ slug: string }>()
   const { language } = useLanguage()
   const isNp = language === 'np'
 
-  const { data: blog, isLoading, isError } = useQuery({
+  const { data: rawBlog, isLoading, isError } = useQuery({
     queryKey: ['blog', slug],
     queryFn: () => getBlogBySlug(slug ?? ''),
     enabled: Boolean(slug),
   })
+  const blog = rawBlog ? localizeBlog(rawBlog, isNp) : rawBlog
   // Same cached list the blog page uses.
   const { data: allBlogs = [] } = useQuery({ queryKey: ['blogs'], queryFn: getBlogs })
 
@@ -59,6 +61,8 @@ export function BlogDetail() {
     ? formatDate(blog.createdAt, isNp)
     : ''
   const minutes = Math.max(1, Math.ceil((blog.content ?? '').split(/\s+/).length / 200))
+  // The company's own posts show its Nepali name in Nepali mode.
+  const author = isNp && /^bhumiraj real estate/i.test(blog.author ?? '') ? 'भूमिराज रियल इस्टेट' : blog.author
   const paragraphs = (blog.content ?? '').split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean)
   const recent = allBlogs.filter((item) => item.slug !== blog.slug).slice(0, 3)
 
@@ -66,7 +70,7 @@ export function BlogDetail() {
     <article className="blog-reader-page">
       <PageHeader
         title={blog.title ?? ''}
-        subtitle={[blog.author, date, isNp ? `${localDigits(minutes, true)} मिनेट पढाइ` : `${minutes} min read`].filter(Boolean).join(' · ')}
+        subtitle={[author, date, isNp ? `${localDigits(minutes, true)} मिनेट पढाइ` : `${minutes} min read`].filter(Boolean).join(' · ')}
         crumbs={[{ label: isNp ? 'ब्लग' : 'Blog', to: '/blogs' }, { label: blog.title ?? '' }]}
       />
 

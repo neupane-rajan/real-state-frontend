@@ -14,6 +14,8 @@ export type Faq = {
   _id?: string
   question?: string
   answer?: string
+  questionNp?: string | null
+  answerNp?: string | null
   category?: string
   [key: string]: unknown
 }
@@ -21,6 +23,8 @@ export type Faq = {
 export type FaqFormPayload = {
   question: string
   answer: string
+  questionNp?: string
+  answerNp?: string
   category: string
 }
 

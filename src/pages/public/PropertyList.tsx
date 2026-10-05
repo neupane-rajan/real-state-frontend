@@ -96,7 +96,7 @@ export function PropertyList() {
         if (range === 'ask' ? price !== null : price === null || price < range.min || price >= range.max) return false
       }
       if (!query) return true
-      return [property.title, property.address, property.description]
+      return [property.title, property.address, property.description, property.titleNp, property.addressNp, property.descriptionNp]
         .some((field) => field?.toLowerCase().includes(query))
     })
 
