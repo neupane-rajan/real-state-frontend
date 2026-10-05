@@ -42,12 +42,12 @@ export function HomeHero({ banners }: HomeHeroProps) {
 
   const facts = isNp
     ? [
-        { value: '१०+ वर्ष', label: 'घर-जग्गा कारोबारमा' },
+        { value: '१९+ वर्ष', label: 'घर-जग्गा कारोबारमा' },
         { value: 'हजारौं', label: 'सन्तुष्ट ग्राहक' },
         { value: '२ कार्यालय', label: 'पहलमानपुर र धनगढी' },
       ]
     : [
-        { value: '10+ years', label: 'in local real estate' },
+        { value: '19+ years', label: 'in local real estate' },
         { value: 'Thousands', label: 'of satisfied clients' },
         { value: '2 offices', label: 'Pahalmanpur & Dhangadhi' },
       ]

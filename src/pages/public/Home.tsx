@@ -116,7 +116,7 @@ export function Home() {
           <div className="home-about__grid">
             <div>
               <h2 id="home-about-title" className="home-about__title">
-                {isNp ? '१० वर्षदेखि कैलालीको घर-जग्गा कारोबारमा' : 'Ten years in Kailali real estate'}
+                {isNp ? '१९ वर्षदेखि कैलालीको घर-जग्गा कारोबारमा' : '19 years in Kailali real estate'}
               </h2>
               <p className="home-about__text">{isNp ? companyInfo.teaserNp : companyInfo.teaserEn}</p>
               <Link to="/about" className="home-section-header__link">

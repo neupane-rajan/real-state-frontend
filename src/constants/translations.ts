@@ -36,7 +36,7 @@ export const translations = {
     footerContact: 'सम्पर्क विवरण',
     footerPhone: 'फोन',
     footerEmail: 'इमेल',
-    footerAboutText: 'भूमिराज रियल इस्टेट विगत १० वर्षदेखि नेपालको रियल इस्टेट क्षेत्रमा विश्वासका साथ सेवा प्रदान गर्दै आएको एक प्रतिष्ठित कम्पनी हो।',
+    footerAboutText: 'भूमिराज रियल इस्टेट विगत १९ वर्षदेखि नेपालको रियल इस्टेट क्षेत्रमा विश्वासका साथ सेवा प्रदान गर्दै आएको एक प्रतिष्ठित कम्पनी हो।',
     footerQuickLinks: 'सजिलो लिङ्कहरू',
     footerAddress: 'ठेगाना',
   },
@@ -75,7 +75,7 @@ export const translations = {
     footerContact: 'Contact Details',
     footerPhone: 'Phone',
     footerEmail: 'Email',
-    footerAboutText: 'Bhumiraj Real Estate is a premium real estate agency in Nepal, providing safe, transparent, and trustworthy property deals for over 10 years.',
+    footerAboutText: 'Bhumiraj Real Estate is a premium real estate agency in Nepal, providing safe, transparent, and trustworthy property deals for over 19 years.',
     footerQuickLinks: 'Quick Links',
     footerAddress: 'Address',
   }

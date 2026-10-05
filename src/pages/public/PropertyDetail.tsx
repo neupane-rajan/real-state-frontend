@@ -365,7 +365,7 @@ export function PropertyDetail() {
                   <img src="/logo-small.webp" alt="" width={52} height={52} />
                   <div>
                     <h2 id="pd-agent-heading" className="pd-agent__name">{isNp ? companyInfo.nameNp : companyInfo.nameEn}</h2>
-                    <p className="pd-agent__meta">{isNp ? '१० वर्षदेखि कैलालीमा' : 'Local agency · 10+ years in Kailali'}</p>
+                    <p className="pd-agent__meta">{isNp ? '१९ वर्षदेखि कैलालीमा' : 'Local agency · 19+ years in Kailali'}</p>
                   </div>
                 </div>
                 <div className="pd-agent__actions">

@@ -83,7 +83,7 @@ export function About() {
   const { data: properties } = useQuery({ queryKey: ['properties'], queryFn: () => getProperties() })
 
   const numbers = [
-    { value: isNp ? '१०+' : '10+', label: isNp ? 'वर्षको अनुभव' : 'years of experience' },
+    { value: isNp ? '१९+' : '19+', label: isNp ? 'वर्षको अनुभव' : 'years of experience' },
     { value: isNp ? 'हजारौं' : 'Thousands', label: isNp ? 'सन्तुष्ट ग्राहक' : 'of satisfied clients' },
     { value: isNp ? '२' : '2', label: isNp ? 'कार्यालय कैलालीमा' : 'offices in Kailali' },
     ...(properties && properties.length > 0
