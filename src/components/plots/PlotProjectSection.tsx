@@ -14,10 +14,12 @@ import { optimizedImageUrl } from '../../utils/images'
 import { translatePlotStatus } from '../../utils/translateHelpers'
 import { PlotDetailModal } from './PlotDetailModal'
 import { PlotLayoutView } from './PlotLayoutView'
+import { localDigits, translateMeasure } from '../../utils/nepali'
 
 type View = 'layout' | 'plan' | 'grid' | 'list'
 
-const plotArea = (plot: Plot) => (plot.area ? `${plot.area}${plot.areaUnit ? ` ${plot.areaUnit}` : ''}` : '')
+const plotArea = (plot: Plot, isNp: boolean) =>
+  plot.area ? translateMeasure(`${plot.area}${plot.areaUnit ? ` ${plot.areaUnit}` : ''}`, isNp) : ''
 
 // Public view of a land development project: availability summary, site plan / grid / list, plot details.
 export function PlotProjectSection({ property }: { property: Property }) {
@@ -42,7 +44,7 @@ export function PlotProjectSection({ property }: { property: Property }) {
 
   const statusLabel = (status: PlotStatus) => translatePlotStatus(status, language)
   const plotLabel = (plot: Plot) =>
-    `${isNp ? 'प्लट' : 'Plot'} ${plot.plotNumber}, ${statusLabel(plot.status)}${plotArea(plot) ? `, ${plotArea(plot)}` : ''}`
+    `${isNp ? 'प्लट' : 'Plot'} ${plot.plotNumber}, ${statusLabel(plot.status)}${plotArea(plot, isNp) ? `, ${plotArea(plot, isNp)}` : ''}`
   const plotPrice = (plot: Plot) =>
     plot.status === 'SOLD' ? null : formatShortPrice(plot.price, isNp) ?? (isNp ? 'सम्पर्क गर्नुहोस्' : 'On request')
 
@@ -70,7 +72,7 @@ export function PlotProjectSection({ property }: { property: Property }) {
         <div>
           <h2 id="pd-plots-heading" className="pd-card__title mb-1">{isNp ? 'प्लट उपलब्धता' : 'Plot availability'}</h2>
           <p className="plot-project__summary">
-            {isNp ? `जम्मा ${stats.total} प्लट` : `${stats.total} plots in this project`}
+            {isNp ? `जम्मा ${localDigits(stats.total, true)} प्लट` : `${stats.total} plots in this project`}
             {lowest ? (isNp ? ` · उपलब्ध प्लट ${lowest} देखि` : ` · available from ${lowest}`) : ''}
           </p>
         </div>
@@ -86,7 +88,7 @@ export function PlotProjectSection({ property }: { property: Property }) {
               aria-pressed={statusFilter === ''}
               onClick={() => setStatusFilter('')}
             >
-              <strong>{stats.total}</strong>
+              <strong>{localDigits(stats.total, isNp)}</strong>
               <span>{isNp ? 'सबै प्लट' : 'All plots'}</span>
             </button>
             {PLOT_STATUSES.map((status) => (
@@ -97,7 +99,7 @@ export function PlotProjectSection({ property }: { property: Property }) {
                 aria-pressed={statusFilter === status}
                 onClick={() => setStatusFilter(statusFilter === status ? '' : status)}
               >
-                <strong>{stats[status]}</strong>
+                <strong>{localDigits(stats[status], isNp)}</strong>
                 <span>{statusLabel(status)}</span>
               </button>
             ))}
@@ -153,7 +155,7 @@ export function PlotProjectSection({ property }: { property: Property }) {
             {isNp ? 'विवरण हेर्न प्लटमा थिच्नुहोस्।' : 'Tap a plot to see its details.'}
             {notInLayoutCount > 0
               ? isNp
-                ? ` ${notInLayoutCount} प्लट नक्सामा देखाइएको छैन — ग्रिड वा सूचीमा हेर्नुहोस्।`
+                ? ` ${localDigits(notInLayoutCount, true)} प्लट नक्सामा देखाइएको छैन — ग्रिड वा सूचीमा हेर्नुहोस्।`
                 : ` ${notInLayoutCount} plot${notInLayoutCount > 1 ? 's are' : ' is'} not shown on the layout — see Grid or List.`
               : ''}
           </p>
@@ -185,7 +187,7 @@ export function PlotProjectSection({ property }: { property: Property }) {
             {isNp ? 'विवरण हेर्न प्लटमा थिच्नुहोस्।' : 'Tap a plot on the plan to see its details.'}
             {unplacedCount > 0
               ? isNp
-                ? ` ${unplacedCount} प्लट नक्सामा देखाइएको छैन — ग्रिड वा सूचीमा हेर्नुहोस्।`
+                ? ` ${localDigits(unplacedCount, true)} प्लट नक्सामा देखाइएको छैन — ग्रिड वा सूचीमा हेर्नुहोस्।`
                 : ` ${unplacedCount} plot${unplacedCount > 1 ? 's are' : ' is'} not marked on the plan — see Grid or List.`
               : ''}
           </p>
@@ -204,7 +206,7 @@ export function PlotProjectSection({ property }: { property: Property }) {
               >
                 <span className="plot-tile__status">{statusLabel(plot.status)}</span>
                 <strong>{plot.plotNumber}</strong>
-                {plotArea(plot) ? <span className="plot-tile__area">{plotArea(plot)}</span> : null}
+                {plotArea(plot, isNp) ? <span className="plot-tile__area">{plotArea(plot, isNp)}</span> : null}
                 {plotPrice(plot) ? <span className="plot-tile__price">{plotPrice(plot)}</span> : null}
               </button>
             </li>
@@ -234,8 +236,8 @@ export function PlotProjectSection({ property }: { property: Property }) {
                       <strong>{plot.plotNumber}</strong>
                     </span>
                   </td>
-                  <td data-label={isNp ? 'क्षेत्रफल' : 'Area'}>{plotArea(plot) || '—'}</td>
-                  <td data-label={isNp ? 'मोहडा' : 'Facing'}>{plot.facing || '—'}</td>
+                  <td data-label={isNp ? 'क्षेत्रफल' : 'Area'}>{plotArea(plot, isNp) || '—'}</td>
+                  <td data-label={isNp ? 'मोहडा' : 'Facing'}>{plot.facing ? translateMeasure(plot.facing, isNp) : '—'}</td>
                   <td data-label={isNp ? 'मूल्य' : 'Price'} className="plot-table__price">{plotPrice(plot) ?? '—'}</td>
                   <td data-label={isNp ? 'स्थिति' : 'Status'}>
                     <span className={`plot-status plot-status--${plot.status.toLowerCase()}`}>{statusLabel(plot.status)}</span>

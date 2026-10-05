@@ -3,20 +3,18 @@ import { useQuery } from '@tanstack/react-query'
 import { Container } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { getBannerImage, type Banner } from '../../api/banners'
-import { getPropertyMeta, type Property } from '../../api/properties'
+import { getPropertyMeta } from '../../api/properties'
 import { companyInfo } from '../../constants/companyInfo'
 import { useLanguage } from '../../hooks/useLanguage'
 import { optimizedImageUrl } from '../../utils/images'
 import { translateCategory } from '../../utils/translateHelpers'
 import { MapPinIcon } from '../common/Icons'
-import { HeroFeatured } from './HeroFeatured'
 
 type HomeHeroProps = {
   banners: Banner[]
-  featured: Property[]
 }
 
-export function HomeHero({ banners, featured }: HomeHeroProps) {
+export function HomeHero({ banners }: HomeHeroProps) {
   const { language } = useLanguage()
   const isNp = language === 'np'
   const navigate = useNavigate()
@@ -113,7 +111,6 @@ export function HomeHero({ banners, featured }: HomeHeroProps) {
           </div>
         </div>
 
-        <HeroFeatured listings={featured} />
       </Container>
     </section>
   )

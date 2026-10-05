@@ -4,6 +4,7 @@ import { getPropertyImageUrls, type Property } from '../../api/properties'
 import { useLanguage } from '../../hooks/useLanguage'
 import { optimizedImageUrl, optimizedSrcSet } from '../../utils/images'
 import { ChevronLeftIcon, ChevronRightIcon, ExpandIcon } from '../common/Icons'
+import { localDigits } from '../../utils/nepali'
 
 const VISIBLE_THUMBS = 4
 
@@ -53,7 +54,7 @@ export function PropertyGallery({ property }: GalleryProps) {
     touchStartX.current = null
   }
 
-  const photoLabel = (i: number) => `${isNp ? 'तस्वीर' : 'Photo'} ${i + 1} / ${count}`
+  const photoLabel = (i: number) => `${isNp ? 'तस्वीर' : 'Photo'} ${localDigits(`${i + 1} / ${count}`, isNp)}`
   const arrows = count > 1 ? (
     <>
       <button type="button" className="gallery-arrow gallery-arrow--prev" onClick={() => go(-1)} aria-label={isNp ? 'अघिल्लो तस्वीर' : 'Previous photo'}>
@@ -79,7 +80,7 @@ export function PropertyGallery({ property }: GalleryProps) {
         />
         {arrows}
         <div className="property-gallery__overlay">
-          {count > 1 ? <span className="property-gallery__counter" aria-hidden="true">{active + 1} / {count}</span> : <span />}
+          {count > 1 ? <span className="property-gallery__counter" aria-hidden="true">{localDigits(`${active + 1} / ${count}`, isNp)}</span> : <span />}
           <button type="button" className="property-gallery__expand" onClick={() => setIsFullscreen(true)}>
             <ExpandIcon />
             <span>{isNp ? 'ठूलो हेर्नुहोस्' : 'View full screen'}</span>

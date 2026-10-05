@@ -37,6 +37,7 @@ import { usePageMeta } from '../../hooks/usePageMeta'
 import { getPhoneHref, getPropertyWhatsAppMessage, getWhatsAppUrl } from '../../utils/contact'
 import { optimizedImageUrl } from '../../utils/images'
 import { translateAmenity, translateCategory, translateStatus } from '../../utils/translateHelpers'
+import { formatDate } from '../../utils/nepali'
 
 // schema.org structured data so search engines understand the listing.
 function PropertyStructuredData({ property }: { property: Property }) {
@@ -163,12 +164,12 @@ export function PropertyDetail() {
   }
 
   const code = listingCode(property.id)
-  const price = formatNprPrice(property.price)
+  const price = formatNprPrice(property.price, isNp)
   // Plot projects without an overall price show the lowest available plot price instead.
-  const lowestPlotPrice = plotProject && !price ? formatNprPrice(getLowestAvailablePlotPrice(property.plots)) : null
+  const lowestPlotPrice = plotProject && !price ? formatNprPrice(getLowestAvailablePlotPrice(property.plots), isNp) : null
   const categoryName = translateCategory(property.category?.name, language)
   const statusName = translateStatus(property.status?.name, language)
-  const listedOn = new Date(property.createdAt).toLocaleDateString(isNp ? 'ne-NP' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+  const listedOn = formatDate(property.createdAt, isNp, 'short')
   const pageUrl = window.location.href
   const whatsappUrl = getWhatsAppUrl(getPropertyWhatsAppMessage(`${property.title} [${code}]`, pageUrl, isNp))
 

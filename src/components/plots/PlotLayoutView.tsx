@@ -1,6 +1,7 @@
 import { formatShortPrice, type Plot, type PlotLayoutRow } from '../../api/properties'
 import { useLanguage } from '../../hooks/useLanguage'
 import { translatePlotStatus } from '../../utils/translateHelpers'
+import { translateMeasure } from '../../utils/nepali'
 
 type PlotLayoutViewProps = {
   rows: PlotLayoutRow[]
@@ -11,7 +12,8 @@ type PlotLayoutViewProps = {
   isDimmed?: (plot: Plot) => boolean
 }
 
-const plotArea = (plot: Plot) => (plot.area ? `${plot.area}${plot.areaUnit ? ` ${plot.areaUnit}` : ''}` : '')
+const plotArea = (plot: Plot, isNp: boolean) =>
+  plot.area ? translateMeasure(`${plot.area}${plot.areaUnit ? ` ${plot.areaUnit}` : ''}`, isNp) : ''
 
 // Draws the project as rows of plots with roads between them. Every plot row spans
 // the full width, so the two sides of a road line up even with different plot counts.
@@ -26,7 +28,7 @@ export function PlotLayoutView({ rows, plots, onSelect, selectedId = null, isDim
         if (row.type === 'road') {
           return (
             <div key={index} className="plot-layout__road">
-              <span>{row.label?.trim() || (isNp ? 'सडक' : 'Road')}</span>
+              <span>{row.label?.trim() ? translateMeasure(row.label, isNp) : isNp ? 'सडक' : 'Road'}</span>
             </div>
           )
         }
@@ -39,12 +41,12 @@ export function PlotLayoutView({ rows, plots, onSelect, selectedId = null, isDim
             {rowPlots.map((plot) => {
               const status = translatePlotStatus(plot.status, language)
               const price = plot.status === 'SOLD' ? null : formatShortPrice(plot.price, isNp)
-              const label = `${isNp ? 'प्लट' : 'Plot'} ${plot.plotNumber}, ${status}${plotArea(plot) ? `, ${plotArea(plot)}` : ''}`
+              const label = `${isNp ? 'प्लट' : 'Plot'} ${plot.plotNumber}, ${status}${plotArea(plot, isNp) ? `, ${plotArea(plot, isNp)}` : ''}`
               const className = `plot-cell plot-cell--${plot.status.toLowerCase()} ${isDimmed?.(plot) ? 'is-dimmed' : ''} ${selectedId === plot.id ? 'is-selected' : ''}`
               const content = (
                 <>
                   <strong>{plot.plotNumber}</strong>
-                  {plotArea(plot) ? <span className="plot-cell__area">{plotArea(plot)}</span> : null}
+                  {plotArea(plot, isNp) ? <span className="plot-cell__area">{plotArea(plot, isNp)}</span> : null}
                   {price ? <span className="plot-cell__price">{price}</span> : null}
                   <span className="plot-cell__status">{status}</span>
                 </>

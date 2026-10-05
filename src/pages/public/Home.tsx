@@ -18,6 +18,7 @@ import { PropertyCard } from '../../components/property/PropertyCard'
 import { companyInfo } from '../../constants/companyInfo'
 import { useLanguage } from '../../hooks/useLanguage'
 import { usePageMeta } from '../../hooks/usePageMeta'
+import { localDigits } from '../../utils/nepali'
 
 // Plain section heading: title, one line of context, and an optional text link.
 function SectionHeader({ title, intro, link }: { title: string; intro?: string; link?: ReactNode }) {
@@ -61,10 +62,6 @@ export function Home() {
 
   const banners = bannersQuery.data ?? []
   const featuredProperties = propertiesQuery.data ?? []
-  // Hero shows the featured listings; if none are featured, the newest three.
-  const heroFeatured = featuredProperties.some((property) => property.isFeatured)
-    ? featuredProperties.filter((property) => property.isFeatured)
-    : featuredProperties.slice(0, 3)
   const testimonials = (testimonialsQuery.data ?? []).slice(0, 6)
   const faqs = (faqsQuery.data ?? []).slice(0, 8)
   const latestBlogs = (blogsQuery.data ?? []).slice(0, 3)
@@ -78,7 +75,7 @@ export function Home() {
 
   return (
     <div className="home-page">
-      <HomeHero banners={banners} featured={heroFeatured} />
+      <HomeHero banners={banners} />
 
       <section className="section-block">
         <Container>
@@ -165,7 +162,7 @@ export function Home() {
                 return (
                   <Col key={String(testimonial.id ?? testimonial.clientName)}>
                     <figure className="testimonial-card">
-                      <div className="testimonial-card__stars" aria-label={`${testimonial.rating ?? 5} / 5`}>
+                      <div className="testimonial-card__stars" aria-label={localDigits(`${testimonial.rating ?? 5} / 5`, isNp)}>
                         {Array.from({ length: 5 }, (_, i) => (
                           <StarIcon key={i} className={i < Number(testimonial.rating ?? 5) ? 'is-on' : ''} />
                         ))}

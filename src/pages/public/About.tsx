@@ -7,6 +7,7 @@ import { HomeOffices } from '../../components/home/HomeOffices'
 import { companyInfo } from '../../constants/companyInfo'
 import { useLanguage } from '../../hooks/useLanguage'
 import { usePageMeta } from '../../hooks/usePageMeta'
+import { localDigits } from '../../utils/nepali'
 
 // The company's four services (from companyinfo.txt), with a one-line explanation each.
 const services = [
@@ -86,7 +87,7 @@ export function About() {
     { value: isNp ? 'हजारौं' : 'Thousands', label: isNp ? 'सन्तुष्ट ग्राहक' : 'of satisfied clients' },
     { value: isNp ? '२' : '2', label: isNp ? 'कार्यालय कैलालीमा' : 'offices in Kailali' },
     ...(properties && properties.length > 0
-      ? [{ value: String(properties.length), label: isNp ? 'हाल उपलब्ध सम्पत्ति' : 'listings available now' }]
+      ? [{ value: localDigits(properties.length, isNp), label: isNp ? 'हाल उपलब्ध सम्पत्ति' : 'listings available now' }]
       : []),
   ]
 

@@ -6,6 +6,7 @@ import { translatePlotStatus } from '../../utils/translateHelpers'
 import { InquiryForm } from '../common/InquiryForm'
 import { PhoneIcon, WhatsAppIcon } from '../common/Icons'
 import { PropertyGallery } from '../property/PropertyGallery'
+import { translateMeasure } from '../../utils/nepali'
 
 type PlotDetailModalProps = {
   project: Property
@@ -20,9 +21,9 @@ export function PlotDetailModal({ project, plot, onClose, onShowAvailable }: Plo
 
   if (!plot) return null
 
-  const price = formatNprPrice(plot.price)
+  const price = formatNprPrice(plot.price, isNp)
   const isSold = plot.status === 'SOLD'
-  const area = plot.area ? `${plot.area}${plot.areaUnit ? ` ${plot.areaUnit}` : ''}` : null
+  const area = plot.area ? translateMeasure(`${plot.area}${plot.areaUnit ? ` ${plot.areaUnit}` : ''}`, isNp) : null
   const pageUrl = window.location.href
   const whatsappUrl = getWhatsAppUrl(getPropertyWhatsAppMessage(project.title, pageUrl, isNp, plot.plotNumber))
   const inquiryMessage = isNp
@@ -31,7 +32,7 @@ export function PlotDetailModal({ project, plot, onClose, onShowAvailable }: Plo
 
   const facts = [
     area ? { label: isNp ? 'क्षेत्रफल' : 'Area', value: area } : null,
-    plot.facing ? { label: isNp ? 'मोहडा' : 'Facing', value: plot.facing } : null,
+    plot.facing ? { label: isNp ? 'मोहडा' : 'Facing', value: translateMeasure(plot.facing, isNp) } : null,
     { label: isNp ? 'मूल्य' : 'Price', value: isSold ? '—' : price ?? (isNp ? 'मूल्यका लागि सम्पर्क गर्नुहोस्' : 'Contact for price') },
   ].filter((fact): fact is { label: string; value: string } => fact !== null)
 

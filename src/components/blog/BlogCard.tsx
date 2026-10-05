@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import type { BlogPost } from '../../api/blogs'
 import { useLanguage } from '../../hooks/useLanguage'
 import { optimizedImageUrl } from '../../utils/images'
+import { formatDate, localDigits } from '../../utils/nepali'
 
 type BlogCardProps = {
   blog: BlogPost
@@ -20,7 +21,7 @@ export function BlogCard({ blog, variant = 'grid' }: BlogCardProps) {
   const { language } = useLanguage()
   const isNp = language === 'np'
   const date = blog.createdAt
-    ? new Date(blog.createdAt).toLocaleDateString(isNp ? 'ne-NP' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    ? formatDate(blog.createdAt, isNp, 'short')
     : ''
   const minutes = Math.max(1, Math.ceil((blog.content ?? '').split(/\s+/).length / 200))
 
@@ -41,7 +42,7 @@ export function BlogCard({ blog, variant = 'grid' }: BlogCardProps) {
       <div className="blog-card__body">
         <p className="blog-card__meta">
           <span>{date}</span>
-          {variant !== 'compact' ? <span>{isNp ? `${minutes} मिनेट पढाइ` : `${minutes} min read`}</span> : null}
+          {variant !== 'compact' ? <span>{isNp ? `${localDigits(minutes, true)} मिनेट पढाइ` : `${minutes} min read`}</span> : null}
         </p>
         <h3 className="blog-card__title">
           <Link to={`/blogs/${blog.slug}`} className="stretched-link">{blog.title}</Link>

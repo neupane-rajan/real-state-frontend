@@ -12,6 +12,7 @@ import { useLanguage } from '../../hooks/useLanguage'
 import { usePageMeta } from '../../hooks/usePageMeta'
 import { getPhoneHref, getWhatsAppUrl } from '../../utils/contact'
 import { optimizedImageUrl } from '../../utils/images'
+import { formatDate, localDigits } from '../../utils/nepali'
 
 export function BlogDetail() {
   const { slug } = useParams<{ slug: string }>()
@@ -55,7 +56,7 @@ export function BlogDetail() {
   }
 
   const date = blog.createdAt
-    ? new Date(blog.createdAt).toLocaleDateString(isNp ? 'ne-NP' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    ? formatDate(blog.createdAt, isNp)
     : ''
   const minutes = Math.max(1, Math.ceil((blog.content ?? '').split(/\s+/).length / 200))
   const paragraphs = (blog.content ?? '').split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean)
@@ -65,7 +66,7 @@ export function BlogDetail() {
     <article className="blog-reader-page">
       <PageHeader
         title={blog.title ?? ''}
-        subtitle={[blog.author, date, isNp ? `${minutes} मिनेट पढाइ` : `${minutes} min read`].filter(Boolean).join(' · ')}
+        subtitle={[blog.author, date, isNp ? `${localDigits(minutes, true)} मिनेट पढाइ` : `${minutes} min read`].filter(Boolean).join(' · ')}
         crumbs={[{ label: isNp ? 'ब्लग' : 'Blog', to: '/blogs' }, { label: blog.title ?? '' }]}
       />
 

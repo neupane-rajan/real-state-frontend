@@ -7,6 +7,7 @@ import { useLanguage } from '../../hooks/useLanguage'
 import { getPhoneHref, getWhatsAppUrl } from '../../utils/contact'
 import { translateCategory } from '../../utils/translateHelpers'
 import { MailIcon, MapPinIcon, PhoneIcon, WhatsAppIcon } from '../common/Icons'
+import { localDigits } from '../../utils/nepali'
 
 const footerLinks = [
   { to: '/', key: 'navHome' },
@@ -117,7 +118,7 @@ export function Footer() {
 
         <div className="site-footer__bottom">
           <p>
-            &copy; {new Date().getFullYear()} {companyName}. {isNp ? 'सर्वाधिकार सुरक्षित।' : 'All rights reserved.'}
+            &copy; {localDigits(new Date().getFullYear(), isNp)} {companyName}. {isNp ? 'सर्वाधिकार सुरक्षित।' : 'All rights reserved.'}
           </p>
           <p>{isNp ? 'कैलाली, सुदूरपश्चिम प्रदेश, नेपाल' : 'Kailali, Sudurpashchim Province, Nepal'}</p>
         </div>

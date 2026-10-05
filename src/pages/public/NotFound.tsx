@@ -4,6 +4,7 @@ import { useLanguage } from '../../hooks/useLanguage'
 import { usePageMeta } from '../../hooks/usePageMeta'
 import { companyInfo } from '../../constants/companyInfo'
 import { getPhoneHref } from '../../utils/contact'
+import { localDigits } from '../../utils/nepali'
 
 export function NotFound() {
   const { language } = useLanguage()
@@ -20,7 +21,7 @@ export function NotFound() {
   return (
     <section className="not-found">
       <Container>
-        <p className="not-found__code">404</p>
+        <p className="not-found__code">{localDigits(404, isNp)}</p>
         <h1 className="not-found__title">
           {isNp ? 'यो पृष्ठ फेला परेन' : 'We couldn’t find that page'}
         </h1>

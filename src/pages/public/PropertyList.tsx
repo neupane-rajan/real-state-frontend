@@ -11,6 +11,7 @@ import { PropertyCard } from '../../components/property/PropertyCard'
 import { useLanguage } from '../../hooks/useLanguage'
 import { usePageMeta } from '../../hooks/usePageMeta'
 import { translateCategory, translateStatus } from '../../utils/translateHelpers'
+import { localDigits, toNepaliDigits } from '../../utils/nepali'
 
 type SortOption = 'newest' | 'price-asc' | 'price-desc'
 
@@ -176,7 +177,7 @@ export function PropertyList() {
               <Form.Select value={minBeds ? String(minBeds) : ''} onChange={(event) => updateParam('beds', event.target.value)}>
                 <option value="">{isNp ? 'शयनकक्ष: जुनसुकै' : 'Any bedrooms'}</option>
                 {[1, 2, 3, 4].map((beds) => (
-                  <option key={beds} value={beds}>{isNp ? `${beds}+ शयनकक्ष` : `${beds}+ bedrooms`}</option>
+                  <option key={beds} value={beds}>{isNp ? `${localDigits(beds, true)}+ शयनकक्ष` : `${beds}+ bedrooms`}</option>
                 ))}
               </Form.Select>
             </Form.Group>
@@ -205,7 +206,7 @@ export function PropertyList() {
                 aria-pressed={category === ''}
                 onClick={() => updateParam('type', '')}
               >
-                {isNp ? 'सबै' : 'All'} <span>{properties.length}</span>
+                {isNp ? 'सबै' : 'All'} <span>{localDigits(properties.length, isNp)}</span>
               </button>
               {typeCounts.map(([name, count]) => (
                 <button
@@ -215,7 +216,7 @@ export function PropertyList() {
                   aria-pressed={category === name}
                   onClick={() => updateParam('type', category === name ? '' : name)}
                 >
-                  {translateCategory(name, language)} <span>{count}</span>
+                  {translateCategory(name, language)} <span>{localDigits(count, isNp)}</span>
                 </button>
               ))}
             </div>
@@ -227,7 +228,7 @@ export function PropertyList() {
             <div className="pf-results">
               <p aria-live="polite">
                 {isNp
-                  ? `${properties.length} मध्ये ${filtered.length} सम्पत्ति देखाइँदै`
+                  ? toNepaliDigits(`${properties.length} मध्ये ${filtered.length} सम्पत्ति देखाइँदै`)
                   : `Showing ${filtered.length} of ${properties.length} properties`}
               </p>
               <div className="plot-view-toggle" role="group" aria-label={isNp ? 'देखाउने तरिका' : 'Layout'}>

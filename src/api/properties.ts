@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance'
+import { toNepaliDigits } from '../utils/nepali'
 
 // Shapes returned by the backend (see backend prisma/schema.prisma).
 
@@ -166,12 +167,13 @@ export const hasPrice = (property: Pick<Property, 'price'>) =>
   typeof property.price === 'number' && Number.isFinite(property.price) && property.price > 0
 
 // Full price, e.g. "Rs. 1,45,00,000". Returns null when no price is set.
-export const formatNprPrice = (price: number | null) => {
+export const formatNprPrice = (price: number | null, isNp = false) => {
   if (price === null || !Number.isFinite(price) || price <= 0) {
     return null
   }
 
-  return `Rs. ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(price)}`
+  const amount = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(price)
+  return isNp ? `रु. ${toNepaliDigits(amount)}` : `Rs. ${amount}`
 }
 
 // Compact price, e.g. "Rs. 1.45 Cr" / "रु. १.४५ करोड". Returns null when no price is set.
@@ -185,15 +187,15 @@ export const formatShortPrice = (price: number | null, isNp = false) => {
 
   if (price >= 10000000) {
     const value = trim(price / 10000000)
-    return isNp ? `रु. ${value} करोड` : `Rs. ${value} Cr`
+    return isNp ? `रु. ${toNepaliDigits(value)} करोड` : `Rs. ${value} Cr`
   }
 
   if (price >= 100000) {
     const value = trim(price / 100000)
-    return isNp ? `रु. ${value} लाख` : `Rs. ${value} Lakh`
+    return isNp ? `रु. ${toNepaliDigits(value)} लाख` : `Rs. ${value} Lakh`
   }
 
-  return formatNprPrice(price)
+  return formatNprPrice(price, isNp)
 }
 
 // ---------- Public API ----------
